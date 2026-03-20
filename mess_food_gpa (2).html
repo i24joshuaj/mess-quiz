@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mess Food GPA — IPM SIC</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #e8c97a;
+    --gold-dim: #2a2008;
+    --gold-mid: #7a5f28;
+    --bg: #0a0a08;
+    --surface: #111109;
+    --surface2: #181610;
+    --text: #e8e0d0;
+    --text-dim: #8a826e;
+    --text-muted: #5a5040;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  .header { margin-bottom: 40px; }
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--gold-mid);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 900;
+    line-height: 1.05;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .header-title span { color: var(--gold); font-style: italic; }
+  .header-sub { font-size: 14px; color: var(--text-dim); max-width: 480px; }
+
+  .progress-outer {
+    background: var(--surface2);
+    height: 2px;
+    margin: 28px 0 32px;
+    position: relative;
+  }
+  .progress-inner {
+    height: 2px;
+    background: var(--gold);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+  }
+
+  .section-block { margin-bottom: 28px; }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border-left: 3px solid var(--gold);
+    margin-bottom: 2px;
+  }
+  .section-id {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .section-meta { flex: 1; }
+  .section-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .section-weight { font-size: 12px; color: var(--text-muted); }
+
+  .q-block {
+    background: var(--surface);
+    border-left: 3px solid var(--surface2);
+    padding: 20px 20px 20px;
+    margin-bottom: 2px;
+    transition: border-color 0.2s;
+  }
+  .q-block.answered { border-left-color: var(--gold-mid); }
+  .q-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    margin-bottom: 8px;
+  }
+  .q-text { font-size: 14px; color: var(--text); margin-bottom: 14px; line-height: 1.6; }
+
+  .options { display: flex; flex-direction: column; gap: 4px; }
+  .opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--surface2);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--bg);
+  }
+  .opt:hover { border-color: var(--gold-mid); background: var(--surface2); }
+  .opt.selected { border-color: var(--gold); background: var(--gold-dim); }
+  .opt input { display: none; }
+  .opt-dot {
+    width: 14px; height: 14px;
+    border: 1px solid var(--text-muted);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: border-color 0.15s, background 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .opt.selected .opt-dot { border-color: var(--gold); background: var(--gold); }
+  .opt-dot::after {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: none;
+  }
+  .opt.selected .opt-dot::after { display: block; }
+  .opt-text { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+  .opt.selected .opt-text { color: var(--text); }
+
+  .slider-block { padding: 6px 0; }
+  .slider-row { display: flex; align-items: center; gap: 16px; }
+  .slider-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 2px;
+    background: var(--surface2);
+    outline: none;
+    border-radius: 0;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    background: var(--gold);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .slider-row input[type=range]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    background: var(--gold);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+  .slider-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--gold);
+    min-width: 36px;
+    text-align: right;
+  }
+  .slider-labels { display: flex; justify-content: space-between; margin-top: 6px; }
+  .slider-labels span { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    padding: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 32px;
+    transition: background 0.2s;
+  }
+  .submit-btn:hover { background: var(--gold-light); }
+  .submit-btn:disabled {
+    background: var(--surface2);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  /* RESULTS */
+  .results { display: none; }
+
+  .result-hero { margin-bottom: 32px; }
+  .result-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .result-gpa {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(64px, 16vw, 96px);
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .result-grade {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+  .result-desc { font-size: 15px; color: var(--text-dim); max-width: 460px; }
+
+  .bell-section { margin: 32px 0; }
+  .bell-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .bell-wrap { width: 100%; position: relative; }
+  canvas { display: block; width: 100%; }
+
+  .divider { border: none; border-top: 1px solid var(--surface2); margin: 28px 0; }
+
+  .sec-grid { display: flex; flex-direction: column; gap: 2px; }
+  .sec-card { background: var(--surface); padding: 18px 20px; border-left: 3px solid var(--gold); }
+  .sec-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .sec-card-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .sec-card-weight { font-size: 11px; color: var(--text-muted); }
+  .sec-card-grade {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--text);
+  }
+  .sec-card-gpa { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .sec-bar-outer { background: var(--bg); height: 2px; margin: 12px 0 8px; }
+  .sec-bar-inner { height: 2px; background: var(--gold); transition: width 0.8s ease; }
+  .sec-bell-wrap { width: 100%; }
+
+  .retake-btn {
+    width: 100%;
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold-mid);
+    padding: 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 32px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .retake-btn:hover { background: var(--surface); border-color: var(--gold); }
+
+  .aasha-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 48px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="quizView">
+    <div class="header">
+      <div class="header-eyebrow">IPM Social Impact Committee</div>
+      <h1 class="header-title">Mess Food <span>GPA</span></h1>
+      <p class="header-sub">Your relationship with the mess, academically evaluated on a 4.33 scale.</p>
+    </div>
+
+    <div class="progress-label" id="progressLabel">0 of 12 answered</div>
+    <div class="progress-outer"><div class="progress-inner" id="progressBar"></div></div>
+
+    <!-- SECTION A -->
+    <div class="section-block">
+      <div class="section-header">
+        <div class="section-id">A</div>
+        <div class="section-meta">
+          <div class="section-name">Consumption Behaviour</div>
+          <div class="section-weight">Weightage: 30% &nbsp;·&nbsp; How often you actually show up</div>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q1">
+        <div class="q-num">01 / 12</div>
+        <div class="q-text">On average, how many meals a week do you eat in the mess?</div>
+        <div class="slider-block">
+          <div class="slider-row">
+            <input type="range" min="0" max="21" value="10" step="1" id="q1" oninput="updSlider()">
+            <div class="slider-val" id="q1v">10</div>
+          </div>
+          <div class="slider-labels"><span>0 meals</span><span>21 meals</span></div>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q2">
+        <div class="q-num">02 / 12</div>
+        <div class="q-text">You find a fly in your food. What do you do?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q2" value="4"><div class="opt-dot"></div><span class="opt-text">Remove it and continue eating without a second thought</span></label>
+          <label class="opt"><input type="radio" name="q2" value="3"><div class="opt-dot"></div><span class="opt-text">Remove it, pause briefly, then continue</span></label>
+          <label class="opt"><input type="radio" name="q2" value="2"><div class="opt-dot"></div><span class="opt-text">Leave the dish but finish the rest of the meal</span></label>
+          <label class="opt"><input type="radio" name="q2" value="1"><div class="opt-dot"></div><span class="opt-text">Leave the mess entirely. Open Swiggy.</span></label>
+          <label class="opt"><input type="radio" name="q2" value="0"><div class="opt-dot"></div><span class="opt-text">File a formal complaint with photographic evidence</span></label>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q3">
+        <div class="q-num">03 / 12</div>
+        <div class="q-text">Do you go to the mess primarily for the AC?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q3" value="4"><div class="opt-dot"></div><span class="opt-text">No, I go for the food</span></label>
+          <label class="opt"><input type="radio" name="q3" value="3"><div class="opt-dot"></div><span class="opt-text">Both, roughly equally</span></label>
+          <label class="opt"><input type="radio" name="q3" value="1"><div class="opt-dot"></div><span class="opt-text">Mostly the AC</span></label>
+          <label class="opt"><input type="radio" name="q3" value="0"><div class="opt-dot"></div><span class="opt-text">Entirely the AC. The food is incidental.</span></label>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q4">
+        <div class="q-num">04 / 12</div>
+        <div class="q-text">Do you go to the mess primarily to watch TV?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q4" value="4"><div class="opt-dot"></div><span class="opt-text">No</span></label>
+          <label class="opt"><input type="radio" name="q4" value="3"><div class="opt-dot"></div><span class="opt-text">Sometimes it's a factor</span></label>
+          <label class="opt"><input type="radio" name="q4" value="1"><div class="opt-dot"></div><span class="opt-text">I time my meals around the match schedule</span></label>
+          <label class="opt"><input type="radio" name="q4" value="0"><div class="opt-dot"></div><span class="opt-text">I have not looked at my plate in weeks</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION B -->
+    <div class="section-block">
+      <div class="section-header">
+        <div class="section-id">B</div>
+        <div class="section-meta">
+          <div class="section-name">Economic Valuation</div>
+          <div class="section-weight">Weightage: 25% &nbsp;·&nbsp; What you actually think it's worth</div>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q5">
+        <div class="q-num">05 / 12</div>
+        <div class="q-text">If mess food were not prepaid, how much would you pay per meal?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q5" value="4"><div class="opt-dot"></div><span class="opt-text">More than the current per-meal cost. Worth it.</span></label>
+          <label class="opt"><input type="radio" name="q5" value="3"><div class="opt-dot"></div><span class="opt-text">Around Rs. 80–100</span></label>
+          <label class="opt"><input type="radio" name="q5" value="2"><div class="opt-dot"></div><span class="opt-text">Around Rs. 40–60</span></label>
+          <label class="opt"><input type="radio" name="q5" value="1"><div class="opt-dot"></div><span class="opt-text">Rs. 20 maximum. And only if hungry.</span></label>
+          <label class="opt"><input type="radio" name="q5" value="0"><div class="opt-dot"></div><span class="opt-text">They would need to pay me</span></label>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q6">
+        <div class="q-num">06 / 12</div>
+        <div class="q-text">How often do you supplement a mess meal with outside food in the same sitting?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q6" value="4"><div class="opt-dot"></div><span class="opt-text">Never. The mess is sufficient.</span></label>
+          <label class="opt"><input type="radio" name="q6" value="3"><div class="opt-dot"></div><span class="opt-text">Occasionally, when there's something specific I want</span></label>
+          <label class="opt"><input type="radio" name="q6" value="1"><div class="opt-dot"></div><span class="opt-text">Often. The mess meal is the appetiser.</span></label>
+          <label class="opt"><input type="radio" name="q6" value="0"><div class="opt-dot"></div><span class="opt-text">Always. The mess meal is a formality.</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION C -->
+    <div class="section-block">
+      <div class="section-header">
+        <div class="section-id">C</div>
+        <div class="section-meta">
+          <div class="section-name">Operational Assessment</div>
+          <div class="section-weight">Weightage: 25% &nbsp;·&nbsp; Timings, diversity, logistics</div>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q7">
+        <div class="q-num">07 / 12</div>
+        <div class="q-text">Are the mess timings convenient and well-timed around your schedule?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q7" value="4"><div class="opt-dot"></div><span class="opt-text">Yes, works well</span></label>
+          <label class="opt"><input type="radio" name="q7" value="3"><div class="opt-dot"></div><span class="opt-text">Mostly, with minor inconveniences</span></label>
+          <label class="opt"><input type="radio" name="q7" value="1"><div class="opt-dot"></div><span class="opt-text">No, I regularly miss meals because of timing</span></label>
+          <label class="opt"><input type="radio" name="q7" value="0"><div class="opt-dot"></div><span class="opt-text">The timings appear to have been chosen to cause maximum inconvenience</span></label>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q8">
+        <div class="q-num">08 / 12</div>
+        <div class="q-text">Does the mess food cater to the diverse student body at IIM Indore?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q8" value="4"><div class="opt-dot"></div><span class="opt-text">Yes, there's reasonable variety</span></label>
+          <label class="opt"><input type="radio" name="q8" value="3"><div class="opt-dot"></div><span class="opt-text">Partially — some cuisines represented, others not</span></label>
+          <label class="opt"><input type="radio" name="q8" value="1"><div class="opt-dot"></div><span class="opt-text">No, it caters to a very specific demographic</span></label>
+          <label class="opt"><input type="radio" name="q8" value="0"><div class="opt-dot"></div><span class="opt-text">I have not seen my home cuisine on the menu once</span></label>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q9">
+        <div class="q-num">09 / 12</div>
+        <div class="q-text">It is widely accepted that Friday lunch is the only good meal the mess produces. How do you feel about the other 20 meals a week?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q9" value="4"><div class="opt-dot"></div><span class="opt-text">They are fine. Friday lunch is just a bonus.</span></label>
+          <label class="opt"><input type="radio" name="q9" value="3"><div class="opt-dot"></div><span class="opt-text">Acceptable. I have lowered my expectations to match.</span></label>
+          <label class="opt"><input type="radio" name="q9" value="1"><div class="opt-dot"></div><span class="opt-text">I structure my week around Friday lunch and endure the rest</span></label>
+          <label class="opt"><input type="radio" name="q9" value="0"><div class="opt-dot"></div><span class="opt-text">Friday lunch is the only reason I have not cancelled my mess subscription</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION D -->
+    <div class="section-block">
+      <div class="section-header">
+        <div class="section-id">D</div>
+        <div class="section-meta">
+          <div class="section-name">Psychological Relationship</div>
+          <div class="section-weight">Weightage: 20% &nbsp;·&nbsp; Where you are emotionally with this</div>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q10">
+        <div class="q-num">10 / 12</div>
+        <div class="q-text">Do you genuinely believe the mess food will get better?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q10" value="4"><div class="opt-dot"></div><span class="opt-text">Yes, I have faith</span></label>
+          <label class="opt"><input type="radio" name="q10" value="3"><div class="opt-dot"></div><span class="opt-text">Marginally, with enough complaints</span></label>
+          <label class="opt"><input type="radio" name="q10" value="1"><div class="opt-dot"></div><span class="opt-text">No, but I've made peace with it</span></label>
+          <label class="opt"><input type="radio" name="q10" value="0"><div class="opt-dot"></div><span class="opt-text">The question assumes a causal relationship between feedback and change that I no longer believe exists</span></label>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q11">
+        <div class="q-num">11 / 12</div>
+        <div class="q-text">How do you feel after a particularly bad mess meal?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q11" value="4"><div class="opt-dot"></div><span class="opt-text">Fine. It happens.</span></label>
+          <label class="opt"><input type="radio" name="q11" value="3"><div class="opt-dot"></div><span class="opt-text">Mildly annoyed but over it by dinner</span></label>
+          <label class="opt"><input type="radio" name="q11" value="1"><div class="opt-dot"></div><span class="opt-text">Deeply aggrieved for several hours</span></label>
+          <label class="opt"><input type="radio" name="q11" value="0"><div class="opt-dot"></div><span class="opt-text">I document it. I have a folder.</span></label>
+        </div>
+      </div>
+
+      <div class="q-block" id="qb-q12">
+        <div class="q-num">12 / 12</div>
+        <div class="q-text">Have you ever genuinely enjoyed a mess meal, excluding Friday lunch?</div>
+        <div class="options">
+          <label class="opt"><input type="radio" name="q12" value="4"><div class="opt-dot"></div><span class="opt-text">Yes, regularly</span></label>
+          <label class="opt"><input type="radio" name="q12" value="3"><div class="opt-dot"></div><span class="opt-text">Yes, on specific days</span></label>
+          <label class="opt"><input type="radio" name="q12" value="1"><div class="opt-dot"></div><span class="opt-text">Once. I remember it clearly. It was a Wednesday.</span></label>
+          <label class="opt"><input type="radio" name="q12" value="0"><div class="opt-dot"></div><span class="opt-text">No. Friday lunch excluded, I eat to survive.</span></label>
+        </div>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="calcGrade()" disabled>Calculate GPA</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="resultsView">
+    <div class="result-hero">
+      <div class="result-eyebrow">Your Mess Food Grade</div>
+      <div class="result-gpa" id="rGPA">—</div>
+      <div class="result-grade" id="rGrade">0.00 / 4.33</div>
+      <div class="result-desc" id="rDesc"></div>
+    </div>
+
+    <div id="dcpWarning" style="display:none; background:#1a0808; border-left:3px solid #c97a7a; padding:14px 18px; margin:20px 0;">
+      <div style="font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.25em; color:#c97a7a; text-transform:uppercase; margin-bottom:6px;">DCP Notice — IIM Indore Policy</div>
+      <div style="font-size:13px; color:#a08080; line-height:1.6;">A D grade in this course triggers Directed Credit Programme (DCP) obligations under IIM Indore academic policy. You are required to report to the mess counter every day until your relationship with the food improves. Attendance is mandatory. Appeals will not be entertained.</div>
+    </div>
+
+    <div class="bell-section">
+      <div class="bell-label">Position on the bell curve</div>
+      <div class="bell-wrap"><canvas id="mainBell" height="110"></canvas></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="bell-label" style="margin-bottom:16px">Section breakdown</div>
+    <div class="sec-grid" id="secGrid"></div>
+
+    <button class="retake-btn" onclick="resetQuiz()">Retake the quiz</button>
+    <div class="aasha-tag">AASHA — IPM Social Impact Committee</div>
+  </div>
+
+</div>
+
+<script>
+const sections = [
+  { id:'A', name:'Consumption Behaviour', weight:0.30, qs:['q2','q3','q4'], slider:{id:'q1',min:0,max:21} },
+  { id:'B', name:'Economic Valuation',    weight:0.25, qs:['q5','q6'] },
+  { id:'C', name:'Operational Assessment',weight:0.25, qs:['q7','q8','q9'] },
+  { id:'D', name:'Psychological Relationship', weight:0.20, qs:['q10','q11','q12'] }
+];
+
+// 12 grade bands. Band 0 = A+ (score 1.0), band 11 = D- (score 0.0)
+// Each band covers 1/12 of the 0-1 score range
+const GRADE_ORDER = ['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-'];
+// GPA values: A+=4.33 down to D-=0.67, evenly spaced
+const GRADE_GPA   = [4.33, 4.00, 3.67, 3.33, 3.00, 2.67, 2.33, 2.00, 1.67, 1.33, 1.00, 0.67];
+
+// Component scoring: raw 0-1 score → letter grade (12 equal bands) → GPA
+function scoreToLetter(pct){
+  const idx = Math.min(11, Math.floor((1 - pct) * 12));
+  return GRADE_ORDER[idx];
+}
+function letterToGPA(letter){
+  const i = GRADE_ORDER.indexOf(letter);
+  return i >= 0 ? GRADE_GPA[i] : 0.67;
+}
+function scoreToComponentGPA(pct){
+  return letterToGPA(scoreToLetter(pct));
+}
+
+// Final grade: weighted average of component GPAs → letter grade
+function gpaToLetter(gpa){
+  for(let i = 0; i < GRADE_GPA.length; i++){
+    if(gpa >= GRADE_GPA[i] - 0.001) return GRADE_ORDER[i];
+  }
+  return 'D-';
+}
+
+// Bell curve: labels at score boundaries between grades
+// Boundary between band i and i+1 is at score = 1 - (i+1)/12
+// Place label at band midpoint: 1 - (i+0.5)/12
+// Only show selected grades to avoid crowding
+const BELL_LABEL_GRADES = ['A+','A','B','C','D','D-'];
+const BELL_LABELS = BELL_LABEL_GRADES.map(g => {
+  const i = GRADE_ORDER.indexOf(g);
+  const x = 1 - (i + 0.5) / 12; // exact midpoint of this grade's score band
+  return [g, x];
+});
+
+function updSlider(){
+  const v = document.getElementById('q1').value;
+  document.getElementById('q1v').textContent = v;
+  document.getElementById('qb-q1').classList.add('answered');
+  updateProgress();
+}
+
+function getRadio(name){
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? parseFloat(el.value) : null;
+}
+
+function getQ1Score(){
+  const v = parseInt(document.getElementById('q1').value);
+  if(v>=18) return 4; if(v>=14) return 3; if(v>=9) return 2; if(v>=5) return 1; return 0;
+}
+
+function countAnswered(){
+  let n = 1;
+  ['q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12'].forEach(q=>{ if(getRadio(q)!==null) n++; });
+  return n;
+}
+
+function updateProgress(){
+  const n = countAnswered();
+  const pct = Math.round(n/12*100);
+  document.getElementById('progressBar').style.width = pct+'%';
+  document.getElementById('progressLabel').textContent = n+' of 12 answered';
+  document.getElementById('submitBtn').disabled = n < 12;
+  document.querySelectorAll('.opt').forEach(opt=>{
+    const inp = opt.querySelector('input');
+    opt.classList.toggle('selected', inp && inp.checked);
+    if(inp && inp.checked){
+      const qname = inp.name;
+      const block = document.getElementById('qb-'+qname);
+      if(block) block.classList.add('answered');
+    }
+  });
+}
+
+document.querySelectorAll('input[type=radio]').forEach(r=>r.addEventListener('change', updateProgress));
+
+function secScore(sec){
+  let total=0, count=0;
+  if(sec.slider){ total+=getQ1Score(); count++; }
+  sec.qs.forEach(q=>{ const v=getRadio(q); if(v!==null){total+=v; count++;} });
+  return count ? total/(count*4) : 0;
+}
+
+const GOLD='#C9A84C', GOLD_DIM='#2a2008', TEXT='#e8e0d0', MUTED='#5a5040', BG='#0a0a08';
+
+function drawBell(canvasId, userPct, h){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const dpr = window.devicePixelRatio||1;
+  const w = canvas.parentElement.offsetWidth||600;
+  canvas.width=w*dpr; canvas.height=h*dpr;
+  canvas.style.width=w+'px'; canvas.style.height=h+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+
+  const pts=300, mean=0.42, std=0.18;
+  const norm=x=>Math.exp(-0.5*((x-mean)/std)**2)/(std*Math.sqrt(2*Math.PI));
+  const xs=Array.from({length:pts},(_,i)=>i/(pts-1));
+  const ys=xs.map(norm);
+  const maxY=Math.max(...ys);
+  const pad={l:12,r:12,t:10,b:28};
+  const cw=w-pad.l-pad.r, ch=h-pad.t-pad.b;
+
+  ctx.beginPath();
+  xs.forEach((x,i)=>{
+    const cx=pad.l+x*cw, cy=pad.t+ch-(ys[i]/maxY)*ch;
+    i===0?ctx.moveTo(cx,cy):ctx.lineTo(cx,cy);
+  });
+  ctx.lineTo(pad.l+cw,pad.t+ch); ctx.lineTo(pad.l,pad.t+ch); ctx.closePath();
+  ctx.fillStyle=GOLD_DIM; ctx.fill();
+
+  ctx.beginPath();
+  xs.forEach((x,i)=>{
+    const cx=pad.l+x*cw, cy=pad.t+ch-(ys[i]/maxY)*ch;
+    i===0?ctx.moveTo(cx,cy):ctx.lineTo(cx,cy);
+  });
+  ctx.strokeStyle=GOLD; ctx.lineWidth=1.5; ctx.stroke();
+
+  const ux=pad.l+userPct*cw;
+  const uy=pad.t+ch-(norm(userPct)/maxY)*ch;
+  ctx.beginPath(); ctx.moveTo(ux,pad.t+ch); ctx.lineTo(ux,uy);
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(ux,uy,5,0,Math.PI*2);
+  ctx.fillStyle='#fff'; ctx.fill();
+
+  const labels = BELL_LABELS;
+  ctx.font=`500 10px 'DM Mono', monospace`; ctx.fillStyle=MUTED;
+  labels.forEach(([l,x])=>{
+    const px = pad.l + x * cw;
+    ctx.textAlign = x < 0.08 ? 'left' : x > 0.92 ? 'right' : 'center';
+    ctx.fillText(l, px, h-6);
+  });
+}
+
+function gradeDesc(gpa){
+  if(gpa>=4.0) return 'The Evangelist. You genuinely enjoy the mess, Friday lunch or otherwise. Others find this concerning.';
+  if(gpa>=3.3) return 'The Adjusted. You have made peace with the situation. Friday lunch helps.';
+  if(gpa>=2.7) return 'The Normal. Complains at exactly the right volume. Lives for Friday lunch like everyone else.';
+  if(gpa>=2.0) return 'The Negotiator. Swiggy Monday to Thursday, mess on Friday. Efficient.';
+  if(gpa>=1.3) return 'The Purist. Shows up on Friday, disappears the rest of the week. Rational.';
+  return 'The Purist (Extreme). Has not forgiven the mess for what it does the other six days. Friday lunch is a brief ceasefire.';
+}
+
+function calcGrade(){
+  const sScores = sections.map(s=>({ ...s, pct: secScore(s) }));
+
+  // Components: score → letter → GPA
+  const sWithGPA = sScores.map(s => ({
+    ...s,
+    letter: scoreToLetter(s.pct),
+    gpa: scoreToComponentGPA(s.pct)
+  }));
+
+  // Final: weighted average of component GPAs → letter grade
+  const finalGPA = Math.round(sWithGPA.reduce((acc,s) => acc + s.gpa * s.weight, 0) * 100) / 100;
+  const finalLetter = gpaToLetter(finalGPA);
+  const isDGrade = ['D+','D','D-'].includes(finalLetter);
+
+  document.getElementById('quizView').style.display='none';
+  document.getElementById('resultsView').style.display='block';
+
+  document.getElementById('rGPA').textContent = finalLetter;
+  document.getElementById('rGrade').textContent = finalGPA.toFixed(2) + ' / 4.33';
+  document.getElementById('rDesc').textContent = gradeDesc(finalGPA);
+  document.getElementById('dcpWarning').style.display = isDGrade ? 'block' : 'none';
+
+  // Bell curve marker at weighted average of component raw scores
+  const finalPct = sScores.reduce((acc,s) => acc + s.pct * s.weight, 0);
+  setTimeout(() => drawBell('mainBell', finalPct, 110), 60);
+
+  const grid = document.getElementById('secGrid');
+  grid.innerHTML = '';
+  sWithGPA.forEach((s, i) => {
+    const bellId = 'sb' + i;
+    const card = document.createElement('div');
+    card.className = 'sec-card';
+    card.innerHTML = `
+      <div class="sec-card-header">
+        <div>
+          <div class="sec-card-name">Section ${s.id} — ${s.name}</div>
+          <div class="sec-card-weight">${Math.round(s.weight*100)}% of final grade</div>
+        </div>
+        <div style="text-align:right">
+          <div class="sec-card-grade">${s.letter}</div>
+          <div class="sec-card-gpa">${s.gpa.toFixed(2)} / 4.33</div>
+        </div>
+      </div>
+      <div class="sec-bar-outer"><div class="sec-bar-inner" style="width:${Math.round(s.pct*100)}%"></div></div>
+      <div class="sec-bell-wrap"><canvas id="${bellId}" height="70"></canvas></div>`;
+    grid.appendChild(card);
+  });
+  setTimeout(() => { sWithGPA.forEach((s,i) => drawBell('sb'+i, s.pct, 70)); }, 100);
+}
+
+function resetQuiz(){
+  document.getElementById('resultsView').style.display='none';
+  document.getElementById('quizView').style.display='block';
+  document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+  document.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+  document.querySelectorAll('.q-block').forEach(b=>b.classList.remove('answered'));
+  document.getElementById('q1').value=10;
+  document.getElementById('q1v').textContent='10';
+  document.getElementById('progressBar').style.width='0%';
+  document.getElementById('progressLabel').textContent='0 of 12 answered';
+  document.getElementById('dcpWarning').style.display='none';
+  window.scrollTo(0,0);
+}
+
+document.getElementById('qb-q1').classList.add('answered');
+</script>
+</body>
+</html>
