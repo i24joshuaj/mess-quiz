@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#0D2445">
+<title>Scheme Eligibility Portal – Surveyor Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Noto+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --saffron: #FF6B00;
+    --saffron-light: #FF8C35;
+    --saffron-glow: rgba(255,107,0,0.15);
+    --navy: #0D2445;
+    --navy-mid: #163364;
+    --navy-light: #1E4080;
+    --green: #138808;
+    --green-light: #1AAD0A;
+    --cream: #FFF8F0;
+    --white: #FFFFFF;
+    --text-dark: #1A1A2E;
+    --text-mid: #3D4A6B;
+    --text-light: #7A8AAD;
+    --border: rgba(13,36,69,0.12);
+    --card-bg: #FFFFFF;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* Tricolor accent bar */
+  .tricolor-bar {
+    height: 5px;
+    background: linear-gradient(to right, var(--saffron) 33.3%, white 33.3% 66.6%, var(--green) 66.6%);
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.18);
+  }
+
+  header {
+    background: var(--navy);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 5px;
+    z-index: 90;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  .emblem {
+    width: 50px; height: 50px;
+    background: radial-gradient(circle, var(--saffron-light), var(--saffron));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+    flex-shrink: 0;
+  }
+
+  .header-text h1 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+
+  .header-text p {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .header-badge {
+    margin-left: auto;
+    background: rgba(255,107,0,0.2);
+    border: 1px solid var(--saffron);
+    color: var(--saffron-light);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Mobile menu button */
+  .mobile-toggle {
+    display: none;
+    background: var(--saffron);
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+  }
+
+  .main-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 85px);
+  }
+
+  /* LEFT PANEL */
+  .left-panel {
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    padding: 26px 22px;
+    overflow-y: auto;
+    max-height: calc(100vh - 85px);
+    position: sticky;
+    top: 85px;
+  }
+
+  .panel-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--saffron);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-section { margin-bottom: 20px; }
+
+  .form-section-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 8px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+
+  .field-group label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-mid);
+  }
+
+  .field-group input,
+  .field-group select {
+    padding: 11px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    font-size: 0.88rem;
+    font-family: 'Noto Sans', sans-serif;
+    color: var(--text-dark);
+    background: var(--cream);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    min-height: 42px;
+  }
+
+  .field-group input:focus,
+  .field-group select:focus {
+    outline: none;
+    border-color: var(--saffron);
+    box-shadow: 0 0 0 3px var(--saffron-glow);
+  }
+
+  .check-grid { display: flex; flex-direction: column; gap: 8px; }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--cream);
+    transition: all 0.15s;
+    user-select: none;
+    min-height: 42px;
+  }
+
+  .check-item.active {
+    border-color: var(--saffron);
+    background: var(--saffron-glow);
+  }
+
+  .check-item input[type="checkbox"] {
+    accent-color: var(--saffron);
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+
+  .check-item span {
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: var(--text-mid);
+  }
+
+  .check-item.active span { color: var(--saffron); font-weight: 600; }
+
+  .separator { height: 1px; background: var(--border); margin: 4px 0 16px; }
+
+  .find-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--saffron), var(--saffron-light));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.02rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(255,107,0,0.35);
+    margin-top: 6px;
+    min-height: 52px;
+  }
+
+  .find-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,107,0,0.45); }
+  .find-btn:active { transform: translateY(0); }
+
+  .reset-btn {
+    width: 100%;
+    padding: 11px;
+    background: transparent;
+    color: var(--text-light);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.15s;
+    min-height: 42px;
+  }
+
+  .reset-btn:hover { border-color: var(--text-mid); color: var(--text-mid); }
+
+  /* RIGHT PANEL */
+  .right-panel {
+    padding: 26px 30px;
+    overflow-y: auto;
+    min-width: 0;
+  }
+
+  .initial-state {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 60vh; text-align: center;
+    padding: 20px;
+  }
+
+  .initial-state .big-icon { font-size: 68px; margin-bottom: 16px; opacity: 0.9; }
+  .initial-state h2 { font-family: 'Baloo 2', cursive; font-size: 1.6rem; color: var(--navy); margin-bottom: 10px; }
+  .initial-state p { color: var(--text-mid); max-width: 480px; margin-bottom: 24px; font-size: 0.95rem; }
+
+  .stat-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+  .stat-box {
+    background: white;
+    padding: 16px 22px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    min-width: 110px;
+  }
+  .stat-box .num { font-family: 'Baloo 2', cursive; font-size: 1.7rem; font-weight: 800; color: var(--saffron); }
+  .stat-box .lbl { font-size: 0.72rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-top: 2px; }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .results-count {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--navy);
+  }
+  .results-count span { color: var(--saffron); }
+
+  /* Search bar */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .search-input {
+    width: 100%;
+    padding: 12px 14px 12px 42px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: 'Noto Sans', sans-serif;
+    background: white;
+    min-height: 46px;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: var(--saffron);
+    box-shadow: 0 0 0 3px var(--saffron-glow);
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    font-size: 16px;
+    pointer-events: none;
+  }
+  .search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(13,36,69,0.08);
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 13px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .search-clear.visible { display: flex; }
+
+  .filter-tags {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .filter-tag {
+    padding: 6px 13px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1.5px solid transparent;
+    background: rgba(13,36,69,0.05);
+    color: var(--text-mid);
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .filter-tag.active-filter {
+    background: var(--navy);
+    color: white;
+    border-color: var(--navy);
+  }
+
+  .filter-tag[data-cat="Insurance"].active-filter { background: #1565C0; border-color: #1565C0; }
+  .filter-tag[data-cat="Pension"].active-filter { background: #7B4EA6; border-color: #7B4EA6; }
+  .filter-tag[data-cat="Health"].active-filter { background: #00796B; border-color: #00796B; }
+  .filter-tag[data-cat="Finance"].active-filter { background: #E65100; border-color: #E65100; }
+  .filter-tag[data-cat="Women"].active-filter { background: #AD1457; border-color: #AD1457; }
+  .filter-tag[data-cat="Agriculture"].active-filter { background: #2E7D32; border-color: #2E7D32; }
+  .filter-tag[data-cat="Skill"].active-filter { background: #6A1B9A; border-color: #6A1B9A; }
+  .filter-tag[data-cat="Housing"].active-filter { background: #4E342E; border-color: #4E342E; }
+  .filter-tag[data-cat="Child"].active-filter { background: #C2185B; border-color: #C2185B; }
+  .filter-tag[data-cat="Document"].active-filter { background: #455A64; border-color: #455A64; }
+
+  .schemes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 16px;
+  }
+
+  .scheme-card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .scheme-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(13,36,69,0.12);
+    border-color: rgba(255,107,0,0.3);
+  }
+
+  .card-stripe { height: 4px; width: 100%; }
+
+  .scheme-card[data-cat="Insurance"] .card-stripe { background: #1565C0; }
+  .scheme-card[data-cat="Pension"] .card-stripe { background: #7B4EA6; }
+  .scheme-card[data-cat="Health"] .card-stripe { background: #00796B; }
+  .scheme-card[data-cat="Finance"] .card-stripe { background: #E65100; }
+  .scheme-card[data-cat="Women"] .card-stripe { background: #AD1457; }
+  .scheme-card[data-cat="Agriculture"] .card-stripe { background: #2E7D32; }
+  .scheme-card[data-cat="Skill"] .card-stripe { background: #6A1B9A; }
+  .scheme-card[data-cat="Housing"] .card-stripe { background: #4E342E; }
+  .scheme-card[data-cat="Child"] .card-stripe { background: #C2185B; }
+  .scheme-card[data-cat="Document"] .card-stripe { background: #455A64; }
+
+  .card-body { padding: 16px 16px 14px; flex: 1; }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-right: 70px;
+  }
+
+  .card-icon {
+    font-size: 26px;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 2px;
+  }
+
+  .card-title {
+    font-family: 'Baloo 2', cursive;
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.25;
+  }
+
+  .card-subtitle {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    margin-top: 2px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .card-benefit {
+    background: linear-gradient(135deg, rgba(255,107,0,0.08), rgba(255,107,0,0.04));
+    border: 1px solid rgba(255,107,0,0.2);
+    border-radius: 8px;
+    padding: 9px 12px;
+    margin-bottom: 12px;
+  }
+
+  .card-benefit-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--saffron);
+    margin-bottom: 2px;
+  }
+
+  .card-benefit-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    line-height: 1.4;
+  }
+
+  .eligibility-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  .eligibility-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 0.77rem;
+    color: var(--text-mid);
+    line-height: 1.4;
+  }
+
+  .eligibility-list li::before {
+    content: '✓';
+    color: var(--green);
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .doc-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+
+  .doc-chip {
+    padding: 3px 9px;
+    background: rgba(13,36,69,0.06);
+    border-radius: 20px;
+    font-size: 0.66rem;
+    color: var(--text-mid);
+    font-weight: 500;
+  }
+
+  .card-cat-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .scheme-card[data-cat="Insurance"] .card-cat-badge { background: rgba(21,101,192,0.1); color: #1565C0; }
+  .scheme-card[data-cat="Pension"] .card-cat-badge { background: rgba(123,78,166,0.1); color: #7B4EA6; }
+  .scheme-card[data-cat="Health"] .card-cat-badge { background: rgba(0,121,107,0.1); color: #00796B; }
+  .scheme-card[data-cat="Finance"] .card-cat-badge { background: rgba(230,81,0,0.1); color: #E65100; }
+  .scheme-card[data-cat="Women"] .card-cat-badge { background: rgba(173,20,87,0.1); color: #AD1457; }
+  .scheme-card[data-cat="Agriculture"] .card-cat-badge { background: rgba(46,125,50,0.1); color: #2E7D32; }
+  .scheme-card[data-cat="Skill"] .card-cat-badge { background: rgba(106,27,154,0.1); color: #6A1B9A; }
+  .scheme-card[data-cat="Housing"] .card-cat-badge { background: rgba(78,52,46,0.1); color: #4E342E; }
+  .scheme-card[data-cat="Child"] .card-cat-badge { background: rgba(194,24,91,0.1); color: #C2185B; }
+  .scheme-card[data-cat="Document"] .card-cat-badge { background: rgba(69,90,100,0.1); color: #455A64; }
+
+  .card-footer {
+    padding: 10px 14px 12px;
+    background: rgba(13,36,69,0.03);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .premium-info {
+    font-size: 0.7rem;
+    color: var(--text-mid);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .more-btn, .apply-btn {
+    border: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Noto Sans', sans-serif;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    letter-spacing: 0.02em;
+  }
+  .more-btn {
+    background: white;
+    color: var(--navy);
+    border: 1.5px solid var(--border);
+    flex: 1;
+  }
+  .more-btn:hover { border-color: var(--navy); background: rgba(13,36,69,0.05); }
+  .apply-btn {
+    background: linear-gradient(135deg, var(--green), var(--green-light));
+    color: white;
+    flex: 1.4;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(19,136,8,0.25);
+  }
+  .apply-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(19,136,8,0.35);
+  }
+  .apply-btn.offline {
+    background: linear-gradient(135deg, #6A7A99, #8596B5);
+    box-shadow: 0 2px 8px rgba(106,122,153,0.25);
+  }
+
+  .state-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(19,136,8,0.1);
+    color: var(--green);
+    border-radius: 12px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 14px;
+    border: 1.5px dashed var(--border);
+  }
+  .empty-state .big-icon { font-size: 60px; opacity: 0.4; margin-bottom: 12px; }
+  .empty-state h3 { font-family: 'Baloo 2', cursive; color: var(--navy); margin-bottom: 6px; font-size: 1.2rem; }
+  .empty-state p { color: var(--text-light); font-size: 0.88rem; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,36,69,0.6);
+    backdrop-filter: blur(3px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 88vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    z-index: 5;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: rgba(13,36,69,0.08);
+    border: none;
+    border-radius: 50%;
+    width: 36px; height: 36px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .modal-close:hover { background: rgba(255,107,0,0.15); }
+
+  .modal-body { padding: 18px 24px 26px; }
+
+  .modal-section { margin-bottom: 18px; }
+  .modal-section-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--saffron);
+    margin-bottom: 8px;
+  }
+
+  .modal-section p, .modal-section li {
+    font-size: 0.86rem;
+    color: var(--text-mid);
+    line-height: 1.6;
+  }
+
+  .modal-section ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .modal-section ul li { padding-left: 14px; position: relative; }
+  .modal-section ul li::before { content: '•'; color: var(--saffron); font-weight: 700; position: absolute; left: 2px; }
+
+  /* Tablet */
+  @media (max-width: 1024px) {
+    .main-layout { grid-template-columns: 320px 1fr; }
+    .left-panel { padding: 22px 18px; }
+    .right-panel { padding: 22px 20px; }
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    body { font-size: 14px; }
+
+    header {
+      padding: 12px 16px;
+      gap: 12px;
+    }
+    .emblem { width: 44px; height: 44px; font-size: 22px; }
+    .header-text h1 { font-size: 1.15rem; }
+    .header-text p { font-size: 0.65rem; letter-spacing: 0.05em; }
+    .header-badge { display: none; }
+
+    .mobile-toggle { display: flex; }
+
+    .main-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .left-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 88%;
+      max-width: 360px;
+      height: 100vh;
+      max-height: 100vh;
+      z-index: 95;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      padding: 70px 20px 30px;
+      box-shadow: 6px 0 30px rgba(0,0,0,0.2);
+    }
+    .left-panel.open { transform: translateX(0); }
+
+    .panel-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(13,36,69,0.5);
+      z-index: 94;
+      display: none;
+    }
+    .panel-backdrop.open { display: block; }
+
+    .close-panel-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(13,36,69,0.08);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .right-panel { padding: 18px 14px; }
+    .schemes-grid { grid-template-columns: 1fr; gap: 14px; }
+    .results-count { font-size: 1.15rem; }
+    .initial-state { min-height: 50vh; }
+    .initial-state h2 { font-size: 1.35rem; }
+    .initial-state .big-icon { font-size: 56px; }
+
+    .card-header { padding-right: 60px; }
+    .card-title { font-size: 0.92rem; }
+
+    .stat-box { padding: 12px 18px; min-width: 95px; }
+    .stat-box .num { font-size: 1.4rem; }
+
+    .modal {
+      max-height: 92vh;
+      border-radius: 14px 14px 0 0;
+      max-width: 100%;
+    }
+    .modal-overlay { padding: 0; align-items: flex-end; }
+  }
+
+  @media (max-width: 400px) {
+    .header-text h1 { font-size: 1.02rem; }
+    .header-text p { display: none; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+
+  /* Remove hover effects on touch */
+  @media (hover: none) {
+    .scheme-card:hover { transform: none; box-shadow: none; border-color: var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<div class="tricolor-bar"></div>
+
+<header>
+  <div class="emblem">🏛️</div>
+  <div class="header-text">
+    <h1>Scheme Eligibility Portal</h1>
+    <p>Surveyor Assessment Tool</p>
+  </div>
+  <button class="mobile-toggle" id="mobile-toggle" aria-label="Open form">☰</button>
+  <div class="header-badge">Surveyor Use Only</div>
+</header>
+
+<div class="main-layout">
+
+  <div class="panel-backdrop" id="panel-backdrop" onclick="closePanel()"></div>
+
+  <!-- LEFT: FORM -->
+  <div class="left-panel" id="left-panel">
+    <button class="close-panel-btn" id="close-panel-btn" onclick="closePanel()" aria-label="Close">✕</button>
+    <div class="panel-title">📋 Beneficiary Profile</div>
+
+    <div class="form-section">
+      <div class="form-section-label">Basic Information</div>
+      <div class="form-row">
+        <div class="field-group">
+          <label>Age (Years)</label>
+          <input type="number" id="age" min="0" max="120" placeholder="e.g. 35" inputmode="numeric">
+        </div>
+        <div class="field-group">
+          <label>Gender</label>
+          <select id="gender">
+            <option value="">Select</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="form-section">
+      <div class="form-section-label">Income & Financial Status</div>
+      <div class="field-group">
+        <label>Annual Family Income (₹)</label>
+        <input type="number" id="income" placeholder="e.g. 120000" inputmode="numeric">
+      </div>
+      <div style="margin-top:10px;">
+        <div class="field-group">
+          <label>BPL / Antyodaya Card?</label>
+          <select id="bpl">
+            <option value="">Select</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="form-section">
+      <div class="form-section-label">Occupation</div>
+      <div class="field-group">
+        <label>Sector / Occupation</label>
+        <select id="occupation">
+          <option value="">Select occupation</option>
+          <option value="farmer">Farmer / Agriculture</option>
+          <option value="unorganized">Unorganized Sector Worker</option>
+          <option value="construction">Construction Worker</option>
+          <option value="street_vendor">Street Vendor</option>
+          <option value="artisan">Artisan / Craftsperson</option>
+          <option value="fisherman">Fisherman</option>
+          <option value="unemployed">Unemployed</option>
+          <option value="student">Student</option>
+          <option value="small_business">Small Business / MSME</option>
+          <option value="salaried">Salaried / Government Employee</option>
+          <option value="homemaker">Homemaker</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="form-section">
+      <div class="form-section-label">Family Situation</div>
+      <div class="check-grid">
+        <label class="check-item" for="has_girl_child">
+          <input type="checkbox" id="has_girl_child" onchange="syncCheckStyle(this)">
+          <span>👧 Has Girl Child (&lt;10 yrs)</span>
+        </label>
+        <label class="check-item" for="pregnant">
+          <input type="checkbox" id="pregnant" onchange="syncCheckStyle(this)">
+          <span>🤰 Pregnant / Lactating Mother</span>
+        </label>
+        <label class="check-item" for="single_parent">
+          <input type="checkbox" id="single_parent" onchange="syncCheckStyle(this)">
+          <span>🤱 Single Parent</span>
+        </label>
+        <label class="check-item" for="widow">
+          <input type="checkbox" id="widow" onchange="syncCheckStyle(this)">
+          <span>🕊️ Widow / Widower</span>
+        </label>
+        <label class="check-item" for="disabled">
+          <input type="checkbox" id="disabled" onchange="syncCheckStyle(this)">
+          <span>♿ Differently Abled</span>
+        </label>
+        <label class="check-item" for="has_bank_account">
+          <input type="checkbox" id="has_bank_account" onchange="syncCheckStyle(this)">
+          <span>🏦 Has Bank Account</span>
+        </label>
+        <label class="check-item" for="has_aadhaar">
+          <input type="checkbox" id="has_aadhaar" onchange="syncCheckStyle(this)">
+          <span>🪪 Has Aadhaar</span>
+        </label>
+        <label class="check-item" for="has_ration">
+          <input type="checkbox" id="has_ration" onchange="syncCheckStyle(this)">
+          <span>🎫 Has Ration Card</span>
+        </label>
+        <label class="check-item" for="no_house">
+          <input type="checkbox" id="no_house" onchange="syncCheckStyle(this)">
+          <span>🏠 No Pucca House</span>
+        </label>
+        <label class="check-item" for="rural">
+          <input type="checkbox" id="rural" onchange="syncCheckStyle(this)">
+          <span>🌾 Rural Area</span>
+        </label>
+        <label class="check-item" for="has_school_children">
+          <input type="checkbox" id="has_school_children" onchange="syncCheckStyle(this)">
+          <span>🎒 School Children (5–10th)</span>
+        </label>
+        <label class="check-item" for="marriage_age_daughter">
+          <input type="checkbox" id="marriage_age_daughter" onchange="syncCheckStyle(this)">
+          <span>💍 Daughter of Marriageable Age</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="form-section">
+      <div class="form-section-label">State / Region</div>
+      <div class="field-group">
+        <label>State</label>
+        <select id="state">
+          <option value="all">All India (Central Schemes)</option>
+          <option value="delhi">Delhi (NCT)</option>
+          <option value="haryana">Haryana</option>
+          <option value="maharashtra">Maharashtra</option>
+          <option value="karnataka">Karnataka</option>
+          <option value="tamilnadu">Tamil Nadu</option>
+          <option value="telangana">Telangana</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="find-btn" onclick="findSchemes()">🔍 Find Eligible Schemes</button>
+    <button class="reset-btn" onclick="resetForm()">↺ Reset Form</button>
+  </div>
+
+  <!-- RIGHT: RESULTS -->
+  <div class="right-panel" id="right-panel">
+    <div class="initial-state" id="initial-state">
+      <div class="big-icon">🇮🇳</div>
+      <h2>Social Security Scheme Finder</h2>
+      <p>Fill in the beneficiary's profile on the left and tap <strong>Find Eligible Schemes</strong> to see all applicable government programmes across Delhi, Haryana, Maharashtra, Karnataka, Tamil Nadu, Telangana and Central schemes. Tap <strong>Apply Now</strong> on any card to open the official portal on the beneficiary's phone.</p>
+      <div class="stat-row">
+        <div class="stat-box"><div class="num" id="stat-schemes">—</div><div class="lbl">Schemes</div></div>
+        <div class="stat-box"><div class="num" id="stat-docs">—</div><div class="lbl">Documents</div></div>
+        <div class="stat-box"><div class="num">6</div><div class="lbl">States</div></div>
+      </div>
+    </div>
+    <div id="results-area" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <div id="modal-title" style="font-family:'Baloo 2',cursive;font-size:1.1rem;font-weight:800;color:var(--navy);padding-right:44px;"></div>
+      <button class="modal-close" onclick="closeModalDirect()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   SCHEME DATABASE
+   States: 'all' = Central | maharashtra | karnataka | tamilnadu | telangana
+   Categories: Health, Insurance, Pension, Finance, Women, Agriculture,
+               Skill, Housing, Child, Document
+   ========================================================================= */
+const SCHEMES = [
+  /* ========== CENTRAL SCHEMES ========== */
+  {
+    id: 1, name: "Ayushman Bharat (PM-JAY)", shortName: "AB-PMJAY", icon: "🏥",
+    category: "Health", state: "all",
+    benefit: "Health insurance up to ₹5 lakh/family/year – free cashless treatment at empanelled hospitals",
+    objective: "Flagship health insurance for economically disadvantaged families. Covers secondary and tertiary hospitalization including surgery, ICU, pre & post-hospitalization.",
+    eligibility: ["Economically disadvantaged / BPL families", "SECC 2011 listed families", "No strict age limit"],
+    documents: ["Aadhaar", "Ration Card", "Income Certificate", "Bank Account"],
+    premium: "Free – no premium",
+    check: (f) => f.bpl === 'yes' || f.income < 200000,
+    applyUrl: "https://beneficiary.nha.gov.in/"
+  },
+  {
+    id: 2, name: "Ayushman Bharat Health Account", shortName: "ABHA ID", icon: "💳",
+    category: "Health", state: "all",
+    benefit: "Free digital health ID storing your medical records securely across hospitals",
+    objective: "Creates a unique 14-digit health ID to access and share personal health records digitally.",
+    eligibility: ["Any Indian citizen", "Aadhaar-linked mobile recommended"],
+    documents: ["Aadhaar", "Mobile Number"],
+    premium: "Free",
+    check: (f) => true,
+    applyUrl: "https://abha.abdm.gov.in/abha/v3/register"
+  },
+  {
+    id: 3, name: "e-Shram Card", shortName: "e-Shram", icon: "🪪",
+    category: "Insurance", state: "all",
+    benefit: "Accidental insurance ₹2 lakh (death/total disability), ₹1 lakh partial + access to welfare schemes",
+    objective: "Unique identity for unorganized sector workers providing access to social security schemes under Ministry of Labour.",
+    eligibility: ["Age 16–59 years", "Unorganized sector worker", "Not member of EPFO/ESIC"],
+    documents: ["Aadhaar (mobile linked)", "Bank Account", "Occupation Details"],
+    premium: "Free registration",
+    check: (f) => f.age >= 16 && f.age <= 59 && ['unorganized','construction','street_vendor','artisan','fisherman','farmer','homemaker','other'].includes(f.occupation),
+    applyUrl: "https://eshram.gov.in/"
+  },
+  {
+    id: 4, name: "PM Suraksha Bima Yojana", shortName: "PMSBY", icon: "🛡️",
+    category: "Insurance", state: "all",
+    benefit: "Accidental death ₹2 lakh, total disability ₹2 lakh, partial disability ₹1 lakh",
+    objective: "Accidental death and disability insurance for the underprivileged at just ₹20/year.",
+    eligibility: ["Age 18–70 years", "Must have savings bank account", "Auto-debit consent"],
+    documents: ["Aadhaar", "Bank Account", "Nominee Details"],
+    premium: "₹20 per annum",
+    check: (f) => f.age >= 18 && f.age <= 70 && f.has_bank_account,
+    applyUrl: "https://jansuraksha.gov.in/forms-pmsby.aspx"
+  },
+  {
+    id: 5, name: "PM Jeevan Jyoti Bima Yojana", shortName: "PMJJBY", icon: "💛",
+    category: "Insurance", state: "all",
+    benefit: "Life insurance cover of ₹2 lakh on death due to any cause",
+    objective: "Life insurance for unorganized sector and economically weaker sections.",
+    eligibility: ["Age 18–50 years", "Bank account linked with Aadhaar"],
+    documents: ["Aadhaar", "Bank Account", "Nominee Details"],
+    premium: "₹436 per annum",
+    check: (f) => f.age >= 18 && f.age <= 50 && f.has_bank_account,
+    applyUrl: "https://jansuraksha.gov.in/forms-pmjjby.aspx"
+  },
+  {
+    id: 6, name: "Atal Pension Yojana", shortName: "APY", icon: "🏧",
+    category: "Pension", state: "all",
+    benefit: "Monthly pension ₹1,000–₹5,000 after age 60; Govt co-contributes 50% for income < ₹15,000/month",
+    objective: "Pension for unorganized sector workers with government co-contribution.",
+    eligibility: ["Age 18–40 years", "Indian citizen with savings account", "Not an income taxpayer"],
+    documents: ["Aadhaar", "Bank Account"],
+    premium: "₹55–₹250/month depending on entry age",
+    check: (f) => f.age >= 18 && f.age <= 40 && f.has_bank_account,
+    applyUrl: "https://enps.nsdl.com/eNPS/NationalPensionSystem.html"
+  },
+  {
+    id: 7, name: "PM Kisan Samman Nidhi", shortName: "PM-KISAN", icon: "🌾",
+    category: "Agriculture", state: "all",
+    benefit: "₹6,000/year in 3 installments directly to farmer's bank account",
+    objective: "Direct income support to small and marginal farmers with cultivable land.",
+    eligibility: ["Small/marginal farmer", "Landowner as per records", "Not an income taxpayer / govt employee"],
+    documents: ["Aadhaar", "Bank Account (Aadhaar linked)", "Land Ownership Proof"],
+    premium: "Free",
+    check: (f) => f.occupation === 'farmer',
+    applyUrl: "https://pmkisan.gov.in/RegistrationFormNew.aspx"
+  },
+  {
+    id: 8, name: "PM Krishi Sinchai Yojana", shortName: "PMKSY", icon: "💧",
+    category: "Agriculture", state: "all",
+    benefit: "Subsidy up to 55% for drip/sprinkler irrigation + watershed development support",
+    objective: "Expand cultivable area under irrigation and improve water-use efficiency (Har Khet Ko Pani).",
+    eligibility: ["Farmer with landholding", "Valid land records", "Indian citizen"],
+    documents: ["Aadhaar", "Land Records (7/12)", "Bank Account"],
+    premium: "Subsidy – beneficiary pays balance",
+    check: (f) => f.occupation === 'farmer',
+    applyUrl: "https://pmksy.gov.in/"
+  },
+  {
+    id: 9, name: "MGNREGA", shortName: "MGNREGA", icon: "⛏️",
+    category: "Finance", state: "all",
+    benefit: "Guaranteed 100 days (up to 125 in some districts) of wage employment/year; wages vary by state",
+    objective: "Livelihood security for rural households through guaranteed public works employment.",
+    eligibility: ["Any adult (18+) of a rural household", "Household registered for job card", "Willing to do unskilled manual work"],
+    documents: ["Aadhaar", "Bank/Post Office Account", "Job Card"],
+    premium: "Free – government employment",
+    check: (f) => f.age >= 18 && f.rural,
+    applyUrl: "https://nrega.nic.in/"
+  },
+  {
+    id: 10, name: "PM Jan Dhan Yojana", shortName: "PMJDY", icon: "🏦",
+    category: "Finance", state: "all",
+    benefit: "Zero-balance savings account + free RuPay debit card + accident cover + overdraft up to ₹10,000",
+    objective: "Universal banking access ensuring financial inclusion for every Indian household.",
+    eligibility: ["Indian citizen aged 10+", "No minimum balance required"],
+    documents: ["Aadhaar or any OVD", "Address Proof", "Photograph"],
+    premium: "Free",
+    check: (f) => f.age >= 10 && !f.has_bank_account,
+    applyUrl: "https://pmjdy.gov.in/scheme"
+  },
+  {
+    id: 11, name: "NSAP – Indira Gandhi Old Age Pension", shortName: "IGNOAPS", icon: "👴",
+    category: "Pension", state: "all",
+    benefit: "₹200/month (60–79 yrs) and ₹500/month (80+ yrs) – topped up by states",
+    objective: "Central pension assistance to elderly citizens below the poverty line.",
+    eligibility: ["Age 60 years or above", "Below Poverty Line (BPL)"],
+    documents: ["Aadhaar", "Age Proof", "BPL Certificate", "Bank Account"],
+    premium: "Free",
+    check: (f) => f.age >= 60 && f.bpl === 'yes',
+    applyUrl: "https://nsap.nic.in/"
+  },
+  {
+    id: 12, name: "NSAP – Widow Pension (IGNWPS)", shortName: "IGNWPS", icon: "🕊️",
+    category: "Pension", state: "all",
+    benefit: "₹300/month for BPL widows aged 40–79; ₹500/month for 80+",
+    objective: "Monthly pension assistance to widows from BPL households.",
+    eligibility: ["Widow aged 40 years or above", "Below Poverty Line"],
+    documents: ["Aadhaar", "Husband's Death Certificate", "BPL Certificate", "Bank Account"],
+    premium: "Free",
+    check: (f) => f.widow && f.gender === 'female' && f.age >= 40 && f.bpl === 'yes',
+    applyUrl: "https://nsap.nic.in/"
+  },
+  {
+    id: 13, name: "NSAP – Disability Pension (IGNDPS)", shortName: "IGNDPS", icon: "♿",
+    category: "Pension", state: "all",
+    benefit: "₹300/month (18–79 yrs) and ₹500/month (80+ yrs) for severely disabled BPL persons",
+    objective: "Pension for persons with severe or multiple disabilities from BPL households.",
+    eligibility: ["Age 18+", "80% or more disability", "BPL household"],
+    documents: ["Aadhaar", "Disability Certificate", "BPL Certificate", "Bank Account"],
+    premium: "Free",
+    check: (f) => f.disabled && f.age >= 18 && f.bpl === 'yes',
+    applyUrl: "https://nsap.nic.in/"
+  },
+  {
+    id: 14, name: "National Family Benefit Scheme", shortName: "NFBS", icon: "👨‍👩‍👧",
+    category: "Finance", state: "all",
+    benefit: "One-time lump sum of ₹20,000 on death of primary breadwinner",
+    objective: "One-time assistance to BPL families on death of primary earning member aged 18–59.",
+    eligibility: ["BPL household", "Breadwinner aged 18–59 at time of death", "Apply within 3 years of death"],
+    documents: ["Death Certificate", "BPL Certificate", "Aadhaar", "Bank Account"],
+    premium: "Free",
+    check: (f) => f.bpl === 'yes' && (f.widow || f.single_parent),
+    applyUrl: "https://nsap.nic.in/"
+  },
+  {
+    id: 15, name: "Sukanya Samriddhi Yojana", shortName: "SSY", icon: "👧",
+    category: "Child", state: "all",
+    benefit: "High-interest tax-free savings for girl child (~8.2% p.a.) with 80C benefit",
+    objective: "Secure the future of a girl child under Beti Bachao Beti Padhao.",
+    eligibility: ["Girl child under 10 years", "Opened by parent/guardian", "Max 2 girl children per family"],
+    documents: ["Girl's Birth Certificate", "Guardian's Aadhaar", "Bank Account"],
+    premium: "Min ₹250/year, max ₹1.5 lakh/year",
+    check: (f) => f.has_girl_child,
+    applyUrl: "https://www.indiapost.gov.in/Financial/Pages/Content/Post-Office-Saving-Schemes.aspx"
+  },
+  {
+    id: 16, name: "PM Awas Yojana", shortName: "PMAY", icon: "🏠",
+    category: "Housing", state: "all",
+    benefit: "Housing assistance ₹1.2–2.5 lakh (rural/urban) + interest subsidy on home loan",
+    objective: "Housing for EWS, LIG and MIG families with priority to women and differently-abled.",
+    eligibility: ["Must not own a pucca house in India", "EWS/LIG/MIG income category", "Priority to women beneficiaries"],
+    documents: ["Aadhaar", "Identity Proof", "Address Proof", "Income Proof", "Bank Account"],
+    premium: "Subsidy applied – no upfront fee",
+    check: (f) => f.no_house && (f.bpl === 'yes' || f.income < 600000),
+    applyUrl: "https://pmaymis.gov.in/"
+  },
+  {
+    id: 17, name: "PM Ujjwala Yojana", shortName: "PMUY", icon: "🔥",
+    category: "Finance", state: "all",
+    benefit: "Free LPG connection + first refill & stove + ₹300 subsidy per refill (14.2 kg)",
+    objective: "Clean cooking fuel for BPL women, reducing indoor air pollution.",
+    eligibility: ["Adult woman from BPL household", "No existing LPG connection in household", "SC/ST/OBC/EWS/Forest dwellers/Antyodaya prioritized"],
+    documents: ["Aadhaar", "Bank Account", "BPL/Ration Card", "Self-declaration"],
+    premium: "Free connection (govt pays deposit)",
+    check: (f) => f.bpl === 'yes' && f.gender === 'female',
+    applyUrl: "https://www.pmuy.gov.in/"
+  },
+  {
+    id: 18, name: "PM Vishwakarma Yojana", shortName: "Vishwakarma", icon: "🔨",
+    category: "Skill", state: "all",
+    benefit: "Free training + ₹500/day stipend + ₹15,000 toolkit + loan up to ₹3 lakh @ 5% collateral-free",
+    objective: "Support 18 traditional artisan trades (carpenters, tailors, potters, goldsmiths, cobblers etc.).",
+    eligibility: ["Age 18+ practising eligible craft", "One member per family only", "Not an income tax payer"],
+    documents: ["Aadhaar (mobile linked)", "Bank Account", "Proof of Occupation"],
+    premium: "Free – government funded",
+    check: (f) => f.age >= 18 && (f.occupation === 'artisan' || f.occupation === 'unorganized'),
+    applyUrl: "https://pmvishwakarma.gov.in/"
+  },
+  {
+    id: 19, name: "PM SVANidhi", shortName: "PM Swanidhi", icon: "🛒",
+    category: "Finance", state: "all",
+    benefit: "Collateral-free working-capital loan ₹10k → ₹20k → ₹50k with 7% interest subsidy + cashback",
+    objective: "Microcredit facility for street vendors affected by COVID-19 to resume livelihoods.",
+    eligibility: ["Street vendor in urban/peri-urban area", "Certificate of Vending or ULB recommendation", "Age 18+"],
+    documents: ["Certificate of Vending / Vendor ID", "Aadhaar", "KYC Document", "Bank Account"],
+    premium: "Interest subsidized; cashback for digital payments",
+    check: (f) => f.age >= 18 && f.occupation === 'street_vendor',
+    applyUrl: "https://pmsvanidhi.mohua.gov.in/"
+  },
+  {
+    id: 20, name: "Skill India – PMKVY 4.0", shortName: "PMKVY", icon: "📚",
+    category: "Skill", state: "all",
+    benefit: "Free short-term skill training + government-recognized certification + placement support",
+    objective: "Enhance employability of youth through sector-specific skill training.",
+    eligibility: ["Indian citizen aged 15–45", "Seeking skill training for employment"],
+    documents: ["Aadhaar", "Educational Proof", "Bank Account", "Photograph"],
+    premium: "Free training and certification",
+    check: (f) => f.age >= 15 && f.age <= 45,
+    applyUrl: "https://www.skillindiadigital.gov.in/"
+  },
+  {
+    id: 21, name: "MUDRA Yojana", shortName: "PMMY", icon: "💼",
+    category: "Finance", state: "all",
+    benefit: "Collateral-free business loans: Shishu ₹50k / Kishore ₹5L / Tarun ₹10L / Tarun Plus ₹20L",
+    objective: "Financial support to micro & small entrepreneurs for income-generating activities.",
+    eligibility: ["Micro/small business owner", "Manufacturing, trading or service sector", "Non-corporate small business"],
+    documents: ["Aadhaar", "PAN", "Business Address Proof", "Bank Account", "Business Plan"],
+    premium: "No collateral required",
+    check: (f) => ['small_business','artisan','street_vendor','unorganized','farmer'].includes(f.occupation),
+    applyUrl: "https://www.udyamimitra.in/"
+  },
+  {
+    id: 22, name: "Pradhan Mantri Matru Vandana Yojana", shortName: "PMMVY", icon: "🤰",
+    category: "Child", state: "all",
+    benefit: "₹5,000 for first child (in 2 installments) + ₹6,000 if second child is a girl",
+    objective: "Maternity benefit for pregnant and lactating mothers for safe delivery and nutrition.",
+    eligibility: ["Pregnant/lactating woman", "Age 19+ at first pregnancy", "Not a regular govt/PSU employee", "Family income < ₹8 lakh/year"],
+    documents: ["Aadhaar", "Bank Account", "MCP Card", "Pregnancy/Delivery Proof"],
+    premium: "Free – DBT benefit",
+    check: (f) => f.pregnant && f.gender === 'female' && f.age >= 19,
+    applyUrl: "https://pmmvy.wcd.gov.in/"
+  },
+  {
+    id: 23, name: "Priority Household Ration Card (NFSA)", shortName: "PHH Card", icon: "🍚",
+    category: "Finance", state: "all",
+    benefit: "5 kg food grains/person/month at ₹1–3/kg under National Food Security Act",
+    objective: "Ensure food security for eligible households under NFSA.",
+    eligibility: ["Identified eligible household per state ranking", "Annual income below state-defined threshold"],
+    documents: ["Aadhaar (all members)", "Address Proof", "Income Proof"],
+    premium: "Heavily subsidized grains",
+    check: (f) => f.bpl === 'yes' || f.income < 180000,
+    applyUrl: "OFFLINE:Nearest Ration Shop / Fair Price Shop / Food & Civil Supplies Dept"
+  },
+  {
+    id: 24, name: "Senior Citizen Card", shortName: "Senior Card", icon: "🧓",
+    category: "Finance", state: "all",
+    benefit: "Rail/bus concessions + higher bank interest + priority service + scheme access",
+    objective: "Identity recognition and welfare access for senior citizens 60 years and above.",
+    eligibility: ["Age 60 years or above"],
+    documents: ["Aadhaar", "Age Proof", "Address Proof", "2 Photographs"],
+    premium: "Free / nominal",
+    check: (f) => f.age >= 60,
+    applyUrl: "OFFLINE:District Social Welfare Office / Tehsildar"
+  },
+  {
+    id: 25, name: "Public Provident Fund", shortName: "PPF", icon: "📈",
+    category: "Finance", state: "all",
+    benefit: "15-year tax-free savings @ ~7.1% p.a. with 80C benefit and government guarantee",
+    objective: "Long-term tax-advantaged savings for retirement and wealth building.",
+    eligibility: ["Any resident Indian (any age)", "Bank/post office account holder"],
+    documents: ["Aadhaar", "PAN", "Bank Account", "Photograph"],
+    premium: "Min ₹500/year, max ₹1.5 lakh/year",
+    check: (f) => f.has_bank_account,
+    applyUrl: "https://www.indiapost.gov.in/Financial/Pages/Content/Post-Office-Saving-Schemes.aspx"
+  },
+
+  /* ========== MAHARASHTRA ========== */
+  {
+    id: 101, name: "Mukhyamantri Majhi Ladki Bahin Yojana", shortName: "Ladki Bahin", icon: "👩",
+    category: "Women", state: "maharashtra",
+    benefit: "₹1,500/month financial assistance to eligible women",
+    objective: "Monthly income support to women from economically weaker families in Maharashtra.",
+    eligibility: ["Woman aged 21–65 years, Maharashtra resident", "Annual family income < ₹2.5 lakh", "Not an income taxpayer", "Family must not own 4-wheeler (tractor exempt)"],
+    documents: ["Aadhaar", "Ration Card", "Income Certificate", "Bank Passbook (Aadhaar linked)", "Domicile"],
+    premium: "Free",
+    check: (f) => f.gender === 'female' && f.age >= 21 && f.age <= 65 && f.income < 250000,
+    applyUrl: "https://ladakibahin.maharashtra.gov.in/"
+  },
+  {
+    id: 102, name: "Sanjay Gandhi Niradhar Yojana", shortName: "SGN Yojana", icon: "🤝",
+    category: "Pension", state: "maharashtra",
+    benefit: "₹1,500/month to destitute, widow, disabled and orphan beneficiaries",
+    objective: "Monthly financial support for destitute persons, widows, divorced/abandoned women and disabled in Maharashtra.",
+    eligibility: ["Age 18–65 years", "BPL household", "Destitute / widow / disabled / orphan / HIV+", "15 years Maharashtra residence"],
+    documents: ["Aadhaar", "Income Certificate / BPL Proof", "Age Proof", "Domicile", "Bank Passbook"],
+    premium: "Free",
+    check: (f) => f.state === 'maharashtra' && f.age >= 18 && f.age <= 65 && f.bpl === 'yes' && (f.widow || f.disabled || f.single_parent),
+    applyUrl: "https://aaplesarkar.mahaonline.gov.in/"
+  },
+  {
+    id: 103, name: "Shravan Bal Seva Rajya Nivruttivetan Yojana", shortName: "Shravan Bal", icon: "👴",
+    category: "Pension", state: "maharashtra",
+    benefit: "₹1,500/month state pension for destitute senior citizens aged 65+",
+    objective: "Monthly pension to destitute elderly persons in Maharashtra who are BPL or have income below ₹21,000/year.",
+    eligibility: ["Age 65 years and above", "BPL or annual income < ₹21,000", "Maharashtra resident"],
+    documents: ["Aadhaar", "Age Proof", "Income Proof / BPL", "Domicile", "Bank Passbook"],
+    premium: "Free",
+    check: (f) => f.age >= 65 && (f.bpl === 'yes' || f.income < 21000),
+    applyUrl: "https://aaplesarkar.mahaonline.gov.in/"
+  },
+  {
+    id: 104, name: "Mukhyamantri Vayoshri Yojana", shortName: "CM Vayoshri", icon: "🦯",
+    category: "Pension", state: "maharashtra",
+    benefit: "One-time ₹3,000 for assistive devices (walker, hearing aid, glasses, wheelchair etc.)",
+    objective: "One-time lump sum benefit to senior citizens for purchase of assistive devices and yoga/wellness training.",
+    eligibility: ["Age 65 years and above", "Family annual income ≤ ₹2 lakh", "Maharashtra resident", "Aadhaar mandatory"],
+    documents: ["Aadhaar", "Income Proof", "Domicile", "Bank Passbook"],
+    premium: "Free",
+    check: (f) => f.age >= 65 && f.income <= 200000,
+    applyUrl: "https://cmvayoshri.mahait.org/"
+  },
+  {
+    id: 105, name: "Bal Sangopan Yojana", shortName: "Bal Sangopan", icon: "🧒",
+    category: "Child", state: "maharashtra",
+    benefit: "₹2,250/month foster-care grant for orphan / single-parent / vulnerable children",
+    objective: "Foster-care support to children (0–18) who are orphans, from single-parent or financially distressed families.",
+    eligibility: ["Child aged 0–18 years", "Orphan, single-parent, or vulnerable household", "Maharashtra resident"],
+    documents: ["Child's Aadhaar / Birth Certificate", "Parent Death Cert. (if applicable)", "Income Proof", "Bank Passbook"],
+    premium: "Free",
+    check: (f) => f.single_parent || f.widow,
+    applyUrl: "https://womenchild.maharashtra.gov.in/"
+  },
+  {
+    id: 106, name: "Kanyadan Yojana (Inter-caste/SC)", shortName: "Kanyadan", icon: "💍",
+    category: "Women", state: "maharashtra",
+    benefit: "₹20,000 to bride's family + ₹4,000 to organizing body for community weddings",
+    objective: "Financial assistance for weddings of SC/ST/OBC/NT brides in Maharashtra through community wedding ceremonies.",
+    eligibility: ["Bride 18+ and groom 21+, Maharashtra residents", "Scheduled Caste/VJNT/OBC", "Benefit only for first marriage (widow remarriage also allowed)"],
+    documents: ["Aadhaar of bride & groom", "Caste Certificate", "Age Proof", "Bank Passbook"],
+    premium: "Free",
+    check: (f) => f.marriage_age_daughter,
+    applyUrl: "https://sjsa.maharashtra.gov.in/en/scheme/assistance-to-newly-married-couples-under-the-kanyadan-yojana/"
+  },
+  {
+    id: 107, name: "Kukut Palan Karj Yojana", shortName: "Kukut Palan", icon: "🐔",
+    category: "Agriculture", state: "maharashtra",
+    benefit: "Loan ₹50,000–₹10 lakh with up to 50% (75% SC/ST) subsidy for poultry farming",
+    objective: "Promote poultry farming as self-employment among rural poor, women, SHGs and landless labourers.",
+    eligibility: ["Age 18–60 years", "Maharashtra resident", "Basic poultry training or experience", "Space/land for poultry shed"],
+    documents: ["Aadhaar", "Land/Lease Document", "Bank Account", "Training Certificate", "Project Report"],
+    premium: "Credit-linked back-ended subsidy",
+    check: (f) => f.age >= 18 && f.age <= 60 && ['farmer','unemployed','homemaker','unorganized'].includes(f.occupation),
+    applyUrl: "https://mahabocw.in/"
+  },
+  {
+    id: 108, name: "Pashu Sangopan Yojana", shortName: "Pashu Sangopan", icon: "🐄",
+    category: "Agriculture", state: "maharashtra",
+    benefit: "Subsidy for dairy / goat / sheep units (typically 50–75%) under livestock scheme",
+    objective: "Promote livestock rearing (cattle, goats, sheep) as self-employment for rural households.",
+    eligibility: ["Farmer / landless labourer / unemployed youth", "Age 18–60", "Maharashtra resident"],
+    documents: ["Aadhaar", "Domicile", "Bank Account", "Project Report", "Land/Lease Proof"],
+    premium: "Credit-linked subsidy",
+    check: (f) => f.age >= 18 && f.age <= 60 && ['farmer','unorganized','unemployed'].includes(f.occupation),
+    applyUrl: "https://mahabocw.in/"
+  },
+  {
+    id: 109, name: "Free Sewing Machine Scheme (Tailoring)", shortName: "Tailoring", icon: "🧵",
+    category: "Women", state: "maharashtra",
+    benefit: "Free sewing machine for trained women for self-employment",
+    objective: "Enable women who completed tailoring/sewing training to start self-employment at home.",
+    eligibility: ["Woman aged 18–45", "Completed sewing training", "Maharashtra resident", "Priority to SHG members"],
+    documents: ["Aadhaar", "Training Certificate", "Income Proof", "Bank Passbook"],
+    premium: "Free",
+    check: (f) => f.gender === 'female' && f.age >= 18 && f.age <= 45,
+    applyUrl: "OFFLINE:District Women & Child Development Office, Maharashtra"
+  },
+
+  /* ========== KARNATAKA ========== */
+  {
+    id: 201, name: "Gruha Lakshmi Yojana", shortName: "Gruha Lakshmi", icon: "🏡",
+    category: "Women", state: "karnataka",
+    benefit: "₹2,000/month DBT to woman head of family",
+    objective: "Monthly income support to the woman head of each eligible household in Karnataka.",
+    eligibility: ["Woman listed as head of family in ration card (APL/BPL/Antyodaya)", "Karnataka resident", "Woman/husband must NOT be income-tax or GST payer", "Aadhaar-linked bank account"],
+    documents: ["Aadhaar", "Ration Card", "Bank Passbook (Aadhaar/NPCI linked)"],
+    premium: "Free",
+    check: (f) => f.gender === 'female' && f.age >= 18,
+    applyUrl: "https://sevasindhugs.karnataka.gov.in/"
+  },
+  {
+    id: 202, name: "Gruha Jyothi Scheme", shortName: "Gruha Jyothi", icon: "💡",
+    category: "Finance", state: "karnataka",
+    benefit: "Up to 200 units of free electricity per month for domestic connections",
+    objective: "Reduce household electricity burden by providing free power up to 200 units/month.",
+    eligibility: ["Karnataka resident", "Domestic electricity connection only", "Previous year average ≤ 200 units/month", "Aadhaar linked with consumer ID"],
+    documents: ["Aadhaar", "Electricity Bill / Consumer ID"],
+    premium: "Free",
+    check: (f) => true,
+    applyUrl: "https://sevasindhugs.karnataka.gov.in/"
+  },
+  {
+    id: 203, name: "Shakti Scheme (Free Bus)", shortName: "Shakti", icon: "🚌",
+    category: "Women", state: "karnataka",
+    benefit: "Free travel for women and transgender persons in all non-premium state RTC buses within Karnataka",
+    objective: "Free public bus travel to empower women and improve mobility across Karnataka.",
+    eligibility: ["Woman or transgender person", "Resident of Karnataka", "Valid ID card (Aadhaar/Voter) showing Karnataka address"],
+    documents: ["Aadhaar or Karnataka ID"],
+    premium: "Free",
+    check: (f) => (f.gender === 'female' || f.gender === 'other'),
+    applyUrl: "https://sevasindhu.karnataka.gov.in/"
+  },
+  {
+    id: 204, name: "Anna Bhagya Scheme", shortName: "Anna Bhagya", icon: "🍚",
+    category: "Finance", state: "karnataka",
+    benefit: "10 kg rice per person per month free to BPL/Antyodaya families",
+    objective: "Food security for poor families in Karnataka.",
+    eligibility: ["Karnataka BPL/Antyodaya ration card holder", "Enrolled with Food & Civil Supplies Dept"],
+    documents: ["Ration Card", "Aadhaar"],
+    premium: "Free",
+    check: (f) => f.bpl === 'yes',
+    applyUrl: "https://ahara.kar.nic.in/"
+  },
+  {
+    id: 205, name: "Yuva Nidhi Scheme", shortName: "Yuva Nidhi", icon: "🎓",
+    category: "Finance", state: "karnataka",
+    benefit: "₹3,000/month (graduate) or ₹1,500/month (diploma) for up to 2 years till employment",
+    objective: "Unemployment allowance for educated youth of Karnataka who passed out in 2022-23 or later.",
+    eligibility: ["Karnataka resident", "Graduated/Diploma in 2022-23 or later", "Unemployed for 6+ months", "Not self-employed / no other allowance"],
+    documents: ["Aadhaar", "Degree/Diploma", "Domicile", "Bank Account"],
+    premium: "Free – DBT",
+    check: (f) => f.occupation === 'unemployed' && f.age >= 18 && f.age <= 35,
+    applyUrl: "https://sevasindhuservices.karnataka.gov.in/"
+  },
+  {
+    id: 206, name: "Bhagya Lakshmi Scheme", shortName: "Bhagya Lakshmi", icon: "👧",
+    category: "Child", state: "karnataka",
+    benefit: "Maturity ~₹1 lakh at 18 yrs + annual scholarship + health cover + accident/death benefit to parents",
+    objective: "Encourage birth and welfare of girl children in BPL families in Karnataka.",
+    eligibility: ["Girl child born in BPL family after 31 March 2006", "Registered within 1 year of birth", "Max 2 girls per family", "Must complete 8th standard, unmarried till 18"],
+    documents: ["Birth Certificate", "BPL Card", "Parents' Aadhaar", "Bank Account", "Immunization Record"],
+    premium: "Free",
+    check: (f) => f.has_girl_child && f.bpl === 'yes',
+    applyUrl: "https://blakshmi.kar.nic.in/"
+  },
+
+  /* ========== TAMIL NADU ========== */
+  {
+    id: 301, name: "Kalaignar Magalir Urimai Thogai", shortName: "Magalir Urimai", icon: "💐",
+    category: "Women", state: "tamilnadu",
+    benefit: "₹1,000/month to eligible woman head of family (annual ₹12,000)",
+    objective: "Monthly basic income support to women heads of households in Tamil Nadu.",
+    eligibility: ["Woman 21+ years, TN resident", "Family income < ₹2.5 lakh/year", "Land ≤ 5 acres wet / 10 acres dry", "Electricity < 3,600 units/year", "No 4-wheeler; not a govt employee/taxpayer"],
+    documents: ["Smart Ration Card", "Aadhaar", "Bank Passbook", "Electricity Bill"],
+    premium: "Free",
+    check: (f) => f.gender === 'female' && f.age >= 21 && f.income < 250000,
+    applyUrl: "https://kmut.tn.gov.in/"
+  },
+  {
+    id: 302, name: "Nalavariyam (TN Labour Welfare Card)", shortName: "Nalavariyam", icon: "🏗️",
+    category: "Insurance", state: "tamilnadu",
+    benefit: "Accident death ₹5L + educational/marriage/maternity/pension + medical assistance",
+    objective: "Social security for registered unorganized-sector workers in Tamil Nadu.",
+    eligibility: ["Unorganized sector worker (construction, artisan, etc.)", "Age 18–60 years", "TN resident"],
+    documents: ["Aadhaar", "Ration Card", "Proof of Occupation", "Bank Passbook"],
+    premium: "Nominal registration fee",
+    check: (f) => f.age >= 18 && f.age <= 60 && ['unorganized','construction','artisan','fisherman','farmer'].includes(f.occupation),
+    applyUrl: "https://labour.tn.gov.in/"
+  },
+  {
+    id: 303, name: "TN Fishermen Welfare Board", shortName: "TNFWB", icon: "🐟",
+    category: "Insurance", state: "tamilnadu",
+    benefit: "Accident death ₹5L + savings-cum-relief + education/marriage/maternity/pension",
+    objective: "Comprehensive social security for registered fishermen in Tamil Nadu.",
+    eligibility: ["Registered fisherman in TN", "Age 18–60 years", "Enrolled with Fisheries Dept"],
+    documents: ["Aadhaar", "Fisherman ID", "Ration Card", "Bank Passbook"],
+    premium: "Nominal registration",
+    check: (f) => f.occupation === 'fisherman',
+    applyUrl: "https://fisheries.tn.gov.in/"
+  },
+  {
+    id: 304, name: "TN Chief Minister's Comprehensive Health Insurance Scheme", shortName: "TN CMCHIS", icon: "🏥",
+    category: "Health", state: "tamilnadu",
+    benefit: "Cashless health cover up to ₹5 lakh/family/year at empanelled hospitals",
+    objective: "State health insurance for low-income families in Tamil Nadu.",
+    eligibility: ["TN resident", "Family income ≤ ₹1.2 lakh/year (or as notified)", "Ration card holder"],
+    documents: ["Aadhaar", "Smart Ration Card", "Income Certificate"],
+    premium: "Free – state funded",
+    check: (f) => f.income <= 180000,
+    applyUrl: "https://www.cmchistn.com/"
+  },
+  {
+    id: 305, name: "Moovalur Ramamirtham Marriage Assistance", shortName: "Marriage Assistance", icon: "💍",
+    category: "Women", state: "tamilnadu",
+    benefit: "₹25,000 (graduates ₹50,000) + 8g gold coin for marriage of eligible woman",
+    objective: "Financial assistance for marriage of educated poor women in Tamil Nadu.",
+    eligibility: ["Woman 18+ at time of marriage", "TN resident", "Annual family income ≤ ₹72,000", "Completed 10th std (higher for graduate tier)"],
+    documents: ["Aadhaar", "Education Cert.", "Income Cert.", "Community Cert.", "Marriage Invitation"],
+    premium: "Free",
+    check: (f) => f.gender === 'female' && f.age >= 18 && f.marriage_age_daughter,
+    applyUrl: "https://www.tnsocialwelfare.tn.gov.in/en/schemes/mmmas"
+  },
+
+  /* ========== TELANGANA ========== */
+  {
+    id: 401, name: "Aasara Pension – Old Age", shortName: "Aasara (Old)", icon: "👴",
+    category: "Pension", state: "telangana",
+    benefit: "₹2,016/month pension for elderly (weavers, toddy tappers, widows same rate)",
+    objective: "Monthly pension for senior citizens without stable income in Telangana.",
+    eligibility: ["Age 57 years or above", "Telangana resident", "No other govt pension"],
+    documents: ["Aadhaar", "Age Proof", "Bank Passbook", "Ration Card"],
+    premium: "Free",
+    check: (f) => f.age >= 57,
+    applyUrl: "https://aasara.telangana.gov.in/"
+  },
+  {
+    id: 402, name: "Aasara Pension – Widow", shortName: "Aasara (Widow)", icon: "🕊️",
+    category: "Pension", state: "telangana",
+    benefit: "₹2,016/month for widows aged 18+",
+    objective: "Monthly pension for widows in Telangana without regular income.",
+    eligibility: ["Widow aged 18+", "Telangana resident", "No assured income source"],
+    documents: ["Aadhaar", "Husband Death Cert.", "Bank Passbook", "Ration Card"],
+    premium: "Free",
+    check: (f) => f.widow && f.gender === 'female' && f.age >= 18,
+    applyUrl: "https://aasara.telangana.gov.in/"
+  },
+  {
+    id: 403, name: "Aasara Pension – Disabled", shortName: "Aasara (Disabled)", icon: "♿",
+    category: "Pension", state: "telangana",
+    benefit: "₹3,016/month for persons with 40%+ disability (any age)",
+    objective: "Higher monthly pension for differently-abled persons in Telangana.",
+    eligibility: ["Any age", "40% or more disability (SADAREM certified)", "Telangana resident"],
+    documents: ["Aadhaar", "SADAREM Disability Cert.", "Bank Passbook", "Ration Card"],
+    premium: "Free",
+    check: (f) => f.disabled,
+    applyUrl: "https://aasara.telangana.gov.in/"
+  },
+  {
+    id: 404, name: "Telangana Labour Card (BOCWWB)", shortName: "TS Labour Card", icon: "🦺",
+    category: "Insurance", state: "telangana",
+    benefit: "Accident death ₹6L + medical ₹1.5L + maternity ₹30k (2 girls) + marriage/education aid",
+    objective: "Social security for registered construction and unorganized workers in Telangana.",
+    eligibility: ["Age 18–60 years", "Worked ≥ 90 days in construction/related work last year", "Telangana resident"],
+    documents: ["Aadhaar", "Voter ID", "Bank Passbook", "Ration Card", "Work Certificate"],
+    premium: "Nominal registration",
+    check: (f) => f.age >= 18 && f.age <= 60 && ['construction','unorganized'].includes(f.occupation),
+    applyUrl: "https://labour.telangana.gov.in/"
+  },
+
+  /* ========== DELHI ========== */
+  {
+    id: 601, name: "Delhi Ladli Scheme", shortName: "Ladli", icon: "👧",
+    category: "Child", state: "delhi",
+    benefit: "Fixed deposit ₹11,000 (institutional birth) or ₹10,000 (home birth) + ₹5,000 at each school milestone (Cl I/VI/IX/XII) — maturity ~₹1 lakh at 18 after passing Class 10",
+    objective: "Empower girl children in Delhi by linking financial assistance to education up to senior secondary.",
+    eligibility: ["Girl born in Delhi (born on/after 01-01-2008)", "Parents Delhi residents for 3+ years", "Annual family income ≤ ₹1 lakh", "Max 2 girls per family", "School must be govt/MCD/NDMC recognized"],
+    documents: ["Birth Certificate (Delhi)", "Residence Proof (3 yrs)", "Income Certificate", "Parents' Aadhaar", "Bank Account", "School Admission Cert."],
+    premium: "Free",
+    check: (f) => f.has_girl_child && f.income <= 100000,
+    applyUrl: "https://edistrict.delhigovt.nic.in/"
+  },
+  {
+    id: 602, name: "Saheli Pink Smart Card", shortName: "Pink Saheli", icon: "🎀",
+    category: "Women", state: "delhi",
+    benefit: "Free unlimited travel on DTC & Cluster buses across Delhi (NCMC smart card, also usable on Metro on recharge)",
+    objective: "Free public bus travel for women and transgender residents of Delhi via a digital NCMC smart card replacing the paper pink-ticket system.",
+    eligibility: ["Woman or transgender resident of Delhi", "Age 5+ years", "Aadhaar with Delhi address (mandatory)"],
+    documents: ["Aadhaar (Delhi address)", "Mobile Number"],
+    premium: "Free (₹49 for replacement card)",
+    check: (f) => (f.gender === 'female' || f.gender === 'other') && f.age >= 5,
+    applyUrl: "https://dtc.delhi.gov.in/"
+  },
+  {
+    id: 603, name: "Delhi Old Age Pension (Samajik Suraksha)", shortName: "Delhi Old Age", icon: "👴",
+    category: "Pension", state: "delhi",
+    benefit: "₹2,000/month (60–69 yrs) and ₹2,500/month (70+ yrs); extra ₹500 for SC/ST/minority",
+    objective: "Monthly financial assistance to elderly residents of Delhi with limited income.",
+    eligibility: ["Age 60 years and above", "Resident of Delhi for 5+ years", "Annual family income < ₹1 lakh", "Not receiving any other govt pension"],
+    documents: ["Aadhaar", "Age Proof", "Residence Proof (5 yrs)", "Income Certificate", "Bank Passbook"],
+    premium: "Free",
+    check: (f) => f.age >= 60 && f.income < 100000,
+    applyUrl: "https://edistrict.delhigovt.nic.in/"
+  },
+  {
+    id: 604, name: "Delhi Widow Pension", shortName: "Delhi Widow", icon: "🕊️",
+    category: "Pension", state: "delhi",
+    benefit: "₹2,500/month for widows / divorced / separated / abandoned women in Delhi",
+    objective: "Monthly pension for women without spousal support in Delhi.",
+    eligibility: ["Woman aged 18–59 years", "Widow / divorced / separated / abandoned", "Delhi resident for 5+ years", "Annual income < ₹1 lakh"],
+    documents: ["Aadhaar", "Husband's Death Cert. / Divorce Decree", "Residence Proof", "Income Certificate", "Bank Passbook"],
+    premium: "Free",
+    check: (f) => f.widow && f.gender === 'female' && f.age >= 18 && f.age <= 59 && f.income < 100000,
+    applyUrl: "https://edistrict.delhigovt.nic.in/"
+  },
+  {
+    id: 605, name: "Delhi Disability Pension", shortName: "Delhi Disability", icon: "♿",
+    category: "Pension", state: "delhi",
+    benefit: "₹2,500/month for persons with 40%+ disability",
+    objective: "Monthly assistance to differently-abled residents of Delhi.",
+    eligibility: ["40% or more disability (medical board certified)", "Delhi resident for 5+ years", "Annual income < ₹1 lakh"],
+    documents: ["Aadhaar", "Disability Certificate", "Residence Proof", "Income Certificate", "Bank Passbook"],
+    premium: "Free",
+    check: (f) => f.disabled && f.income < 100000,
+    applyUrl: "https://edistrict.delhigovt.nic.in/"
+  },
+  {
+    id: 606, name: "Delhi Mukhyamantri Tirth Yatra Yojana", shortName: "Tirth Yatra", icon: "🛕",
+    category: "Finance", state: "delhi",
+    benefit: "Free train journey, accommodation, food and sightseeing to major pilgrimage sites (once in a lifetime)",
+    objective: "Free pilgrimage tours for senior citizens of Delhi.",
+    eligibility: ["Age 60+ years", "Delhi resident", "Not a government employee", "Haven't availed benefit before"],
+    documents: ["Aadhaar", "Age Proof", "Voter ID (Delhi)", "Self-declaration"],
+    premium: "Free",
+    check: (f) => f.age >= 60,
+    applyUrl: "https://edistrict.delhigovt.nic.in/"
+  },
+
+  /* ========== HARYANA ========== */
+  {
+    id: 701, name: "Deen Dayal Lado Lakshmi Yojana", shortName: "Lado Lakshmi", icon: "👩",
+    category: "Women", state: "haryana",
+    benefit: "₹2,100/month to every eligible woman in family (₹1,100 DBT + ₹1,000 into 5-yr RD)",
+    objective: "Financial independence and social security for women of Haryana from lower-income families.",
+    eligibility: ["Woman aged 23+ (and typically ≤ 60)", "Haryana resident 15+ years", "Family income per FIDR ≤ ₹1 lakh/year", "Woman/husband not an income tax payer"],
+    documents: ["Aadhaar", "Parivar Pehchan Patra (PPP)", "Residence Proof", "Bank Passbook (Aadhaar linked)"],
+    premium: "Free – DBT via PFMS",
+    check: (f) => f.gender === 'female' && f.age >= 23 && f.age <= 60 && f.income <= 100000,
+    applyUrl: "OFFLINE:Download Lado Lakshmi App (HARTRON) from Play Store / App Store"
+  },
+  {
+    id: 702, name: "HAPPY Card (Haryana Antyodaya Parivar Parivahan Yojana)", shortName: "HAPPY Card", icon: "🎟️",
+    category: "Finance", state: "haryana",
+    benefit: "1,000 km/year free travel on Haryana Roadways buses for Antyodaya families",
+    objective: "Free bus travel for economically weaker (Antyodaya/BPL) families of Haryana.",
+    eligibility: ["Haryana resident", "Antyodaya/BPL family (income < ₹1 lakh/year per PPP)", "Valid Parivar Pehchan Patra", "Age 18+"],
+    documents: ["Parivar Pehchan Patra (PPP)", "Aadhaar (linked mobile)", "Address Proof"],
+    premium: "₹50 one-time (non-refundable)",
+    check: (f) => f.age >= 18 && f.bpl === 'yes' && f.income < 100000,
+    applyUrl: "https://ebooking.hrtransport.gov.in/"
+  },
+  {
+    id: 703, name: "Old Age Samman Allowance (Haryana)", shortName: "Old Age Samman", icon: "👴",
+    category: "Pension", state: "haryana",
+    benefit: "₹3,000/month pension for senior citizens of Haryana",
+    objective: "Monthly financial support to senior citizens of Haryana without adequate income.",
+    eligibility: ["Age 60 years and above", "Haryana domicile and resident", "Annual family income ≤ ₹3 lakh", "Not receiving any other govt pension"],
+    documents: ["Aadhaar", "Age Proof", "Residence Proof (15+ years)", "Income Certificate", "Bank Passbook", "Parivar Pehchan Patra"],
+    premium: "Free",
+    check: (f) => f.age >= 60 && f.income <= 300000,
+    applyUrl: "https://saralharyana.gov.in/"
+  },
+  {
+    id: 704, name: "Haryana Widow & Destitute Women Pension", shortName: "Haryana Widow", icon: "🕊️",
+    category: "Pension", state: "haryana",
+    benefit: "₹3,000/month for widows and destitute women",
+    objective: "Social security to widows, destitute, deserted and abandoned women in Haryana.",
+    eligibility: ["Woman aged 18+", "Haryana domicile (1+ year residence)", "Widow / destitute / deserted / abandoned", "Own income < ₹3 lakh/year"],
+    documents: ["Aadhaar", "Husband Death Cert. / Self-declaration", "Residence Proof", "Income Certificate", "Bank Passbook", "PPP"],
+    premium: "Free",
+    check: (f) => f.widow && f.gender === 'female' && f.age >= 18,
+    applyUrl: "https://saralharyana.gov.in/"
+  },
+  {
+    id: 705, name: "Haryana Disability Pension", shortName: "Haryana Disability", icon: "♿",
+    category: "Pension", state: "haryana",
+    benefit: "₹3,000/month for persons with 60%+ disability (reduced rate for lesser disability)",
+    objective: "Monthly financial assistance to differently-abled residents of Haryana.",
+    eligibility: ["Age 18+", "60% or more disability (70% for blindness/low vision)", "Haryana domicile", "Annual income ≤ ₹3 lakh"],
+    documents: ["Aadhaar", "Disability Certificate", "Residence Proof", "Income Certificate", "Bank Passbook", "PPP"],
+    premium: "Free",
+    check: (f) => f.disabled && f.age >= 18,
+    applyUrl: "https://saralharyana.gov.in/"
+  },
+  {
+    id: 706, name: "Haryana Ladli Social Security Allowance", shortName: "Ladli SSA", icon: "👧",
+    category: "Women", state: "haryana",
+    benefit: "₹3,000/month to parents/guardians with only girl children (no boys) — paid till mother turns 45",
+    objective: "Financial security to families with only girl children, to address gender imbalance.",
+    eligibility: ["Mother below 45 years (or older if applicable)", "Has only girl child/children, no sons", "Haryana resident 10+ years", "Family income < ₹2 lakh/year"],
+    documents: ["Aadhaar", "Birth Certificates (girls)", "Residence Proof", "Income Certificate", "Bank Passbook", "PPP"],
+    premium: "Free",
+    check: (f) => f.gender === 'female' && f.has_girl_child && f.age < 45,
+    applyUrl: "https://saralharyana.gov.in/"
+  },
+  {
+    id: 707, name: "Mahila Samridhi Yojana (Haryana SC Women)", shortName: "Mahila Samridhi", icon: "💼",
+    category: "Finance", state: "haryana",
+    benefit: "Loan up to ₹75,000 at 4% interest for self-employment (SC women)",
+    objective: "Concessional loans to SC women of Haryana for self-employment and income-generating activities.",
+    eligibility: ["Woman of Scheduled Caste", "Haryana resident", "Age 18–55 years", "Family annual income ≤ ₹3 lakh (urban) / ₹2 lakh (rural)"],
+    documents: ["Aadhaar", "Caste Certificate (SC)", "Residence Proof", "Income Certificate", "Bank Passbook", "Project Report"],
+    premium: "Subsidized loan @ 4%",
+    check: (f) => f.gender === 'female' && f.age >= 18 && f.age <= 55,
+    applyUrl: "https://haryanascfdc.gov.in/"
+  },
+
+  /* ========== DOCUMENTS / IDs ========== */
+  {
+    id: 501, name: "Aadhaar Card", shortName: "Aadhaar", icon: "🆔",
+    category: "Document", state: "all",
+    benefit: "Universal 12-digit biometric ID – mandatory for almost all welfare schemes",
+    objective: "Unique identity proof issued by UIDAI, used for identity and address verification across India.",
+    eligibility: ["Any resident of India (any age)"],
+    documents: ["Birth Certificate / Existing ID", "Address Proof"],
+    premium: "Free (update also free via mAadhaar once/year)",
+    check: (f) => true,
+    applyUrl: "https://ask.uidai.gov.in/"
+  },
+  {
+    id: 502, name: "Aadhaar Update", shortName: "Aadhaar Update", icon: "✏️",
+    category: "Document", state: "all",
+    benefit: "Update address, mobile, photo or biometrics on existing Aadhaar",
+    objective: "Keep Aadhaar details current to avoid rejection in scheme applications and KYC.",
+    eligibility: ["Any Aadhaar holder"],
+    documents: ["Original Aadhaar", "New Address/Identity Proof"],
+    premium: "Biometric update ₹100; demographic ₹50",
+    check: (f) => f.has_aadhaar,
+    applyUrl: "https://ssup.uidai.gov.in/"
+  },
+  {
+    id: 503, name: "Voter ID (EPIC)", shortName: "Voter ID", icon: "🗳️",
+    category: "Document", state: "all",
+    benefit: "Photo identity card issued by Election Commission – valid ID & address proof",
+    objective: "Enables voting in elections and serves as widely accepted identity proof.",
+    eligibility: ["Indian citizen aged 18+", "Ordinarily resident at registered address"],
+    documents: ["Aadhaar", "Birth/Age Proof", "Address Proof", "Photograph"],
+    premium: "Free",
+    check: (f) => f.age >= 18,
+    applyUrl: "https://voters.eci.gov.in/"
+  },
+  {
+    id: 504, name: "PAN Card", shortName: "PAN", icon: "🔢",
+    category: "Document", state: "all",
+    benefit: "Permanent 10-digit alphanumeric ID for all tax and high-value financial transactions",
+    objective: "Mandatory for income tax, bank account opening and transactions above threshold.",
+    eligibility: ["Any Indian resident/NRI (individual or entity)"],
+    documents: ["Aadhaar", "Birth Certificate", "Photograph"],
+    premium: "₹107 (physical) / ₹72 (e-PAN)",
+    check: (f) => f.age >= 18 || f.occupation === 'small_business',
+    applyUrl: "https://www.onlineservices.nsdl.com/paam/endUserRegisterContact.html"
+  },
+  {
+    id: 505, name: "Ration Card", shortName: "Ration Card", icon: "🎫",
+    category: "Document", state: "all",
+    benefit: "Enables subsidized food grains via PDS + identity & income-level proof",
+    objective: "State-issued family ID document used for public distribution system and scheme eligibility.",
+    eligibility: ["Indian citizen", "Residing in the state of application", "One card per family"],
+    documents: ["Aadhaar (all members)", "Address Proof", "Income Proof", "Photo"],
+    premium: "Free / nominal fee",
+    check: (f) => true,
+    applyUrl: "OFFLINE:State Food & Civil Supplies Dept / Tehsildar Office"
+  },
+  {
+    id: 506, name: "Income Certificate", shortName: "Income Cert.", icon: "💰",
+    category: "Document", state: "all",
+    benefit: "Official proof of annual family income – required for most welfare schemes",
+    objective: "Issued by Tahsildar/Revenue Officer certifying the family's annual income.",
+    eligibility: ["Any resident applying for income-based benefits"],
+    documents: ["Aadhaar", "Ration Card", "Salary Slip / Self-declaration", "Address Proof"],
+    premium: "Nominal ₹10–50",
+    check: (f) => true,
+    applyUrl: "OFFLINE:Tehsildar / Revenue Office / State e-District Portal"
+  },
+  {
+    id: 507, name: "Caste / Community Certificate", shortName: "Community Cert.", icon: "📜",
+    category: "Document", state: "all",
+    benefit: "Proof of SC/ST/OBC/MBC/DNT category for reservation and category-based schemes",
+    objective: "Official certificate confirming caste/community for availing reservation benefits.",
+    eligibility: ["Belonging to notified SC/ST/OBC/MBC community", "Supporting family records"],
+    documents: ["Aadhaar", "Parent's caste proof", "Ration Card", "School Records"],
+    premium: "Nominal",
+    check: (f) => true,
+    applyUrl: "OFFLINE:Tehsildar / Revenue Office / State e-District Portal"
+  },
+  {
+    id: 508, name: "Domicile / Residence Certificate", shortName: "Domicile", icon: "🏘️",
+    category: "Document", state: "all",
+    benefit: "Proof of residence in a state – required for state scheme applications & admissions",
+    objective: "Certifies that the applicant has been residing in the state for the required period.",
+    eligibility: ["Continuous residence in the state (typically 3–15 years)"],
+    documents: ["Aadhaar", "Ration Card", "School Records", "Utility Bill", "Self-declaration"],
+    premium: "Nominal",
+    check: (f) => true,
+    applyUrl: "OFFLINE:Tehsildar / Revenue Office / State e-District Portal"
+  },
+  {
+    id: 509, name: "Birth Certificate", shortName: "Birth Cert.", icon: "👶",
+    category: "Document", state: "all",
+    benefit: "Official proof of date of birth – needed for school admission, passport, ID cards",
+    objective: "Legal record of birth issued by Municipal Corporation / Gram Panchayat.",
+    eligibility: ["Any individual (preferably registered within 21 days of birth)"],
+    documents: ["Hospital discharge / Delivery proof", "Parents' ID", "Address Proof"],
+    premium: "Free if within 21 days; fee for late registration",
+    check: (f) => true,
+    applyUrl: "OFFLINE:Municipal Corporation / Gram Panchayat"
+  },
+  {
+    id: 510, name: "Death Certificate", shortName: "Death Cert.", icon: "🕯️",
+    category: "Document", state: "all",
+    benefit: "Legal proof of death – required for pension, insurance, property transfer, widow benefits",
+    objective: "Official document recording date, time and cause of death.",
+    eligibility: ["Family/next-of-kin of deceased"],
+    documents: ["Hospital Certificate", "Deceased ID", "Applicant ID"],
+    premium: "Free if within 21 days; fee for late",
+    check: (f) => f.widow || f.single_parent,
+    applyUrl: "OFFLINE:Municipal Corporation / Gram Panchayat"
+  },
+  {
+    id: 511, name: "Disability Certificate (UDID)", shortName: "UDID", icon: "♿",
+    category: "Document", state: "all",
+    benefit: "Universal Disability ID – enables access to all disability schemes, reservation, concessions",
+    objective: "Single certificate for all disability benefits across India issued by Medical Board.",
+    eligibility: ["Person with 40%+ disability as per RPwD Act"],
+    documents: ["Aadhaar", "Medical Reports", "Photograph"],
+    premium: "Free",
+    check: (f) => f.disabled,
+    applyUrl: "https://www.swavlambancard.gov.in/"
+  },
+  {
+    id: 512, name: "EWS Certificate", shortName: "EWS Cert.", icon: "📋",
+    category: "Document", state: "all",
+    benefit: "Proof of Economically Weaker Section for 10% reservation in govt jobs & education",
+    objective: "Certifies the family is in the EWS category (income & asset thresholds).",
+    eligibility: ["Family income < ₹8 lakh/year", "Not in SC/ST/OBC", "Land/asset limits as per rules"],
+    documents: ["Aadhaar", "Income Proof", "Land Records", "Ration Card"],
+    premium: "Nominal",
+    check: (f) => f.income < 800000 && f.income >= 0,
+    applyUrl: "OFFLINE:Tehsildar / Revenue Office"
+  },
+  {
+    id: 513, name: "OBC Certificate (Non-Creamy Layer)", shortName: "OBC NCL", icon: "📄",
+    category: "Document", state: "all",
+    benefit: "Proof for 27% OBC reservation in central/state jobs and education",
+    objective: "Certifies Other Backward Class status with non-creamy layer income condition.",
+    eligibility: ["Member of notified OBC community", "Family income < ₹8 lakh/year"],
+    documents: ["Aadhaar", "Caste proof (family)", "Income Proof"],
+    premium: "Nominal",
+    check: (f) => f.income < 800000,
+    applyUrl: "OFFLINE:Tehsildar / Revenue Office"
+  },
+  {
+    id: 514, name: "Driving Licence", shortName: "DL", icon: "🚗",
+    category: "Document", state: "all",
+    benefit: "Legal authorization to drive + widely accepted identity proof",
+    objective: "Official licence to drive motor vehicles in India.",
+    eligibility: ["Age 18+ for car/bike (>50cc)", "16+ for bike ≤50cc (gearless, with consent)"],
+    documents: ["Aadhaar", "Address Proof", "Age Proof", "Medical Cert. (if >40)"],
+    premium: "₹200–1,000 depending on category",
+    check: (f) => f.age >= 16,
+    applyUrl: "https://parivahan.gov.in/parivahan/"
+  },
+  {
+    id: 515, name: "Udyam Registration (MSME)", shortName: "Udyam", icon: "🏭",
+    category: "Document", state: "all",
+    benefit: "Free MSME registration – access to priority credit, subsidies, tender benefits, delayed-payment protection",
+    objective: "Formal recognition of Micro/Small/Medium Enterprises for government benefits.",
+    eligibility: ["Micro/Small/Medium enterprise", "Any sector – manufacturing, services, trading"],
+    documents: ["Aadhaar of Proprietor", "PAN", "Bank Account", "GSTIN (if applicable)"],
+    premium: "Free online",
+    check: (f) => f.occupation === 'small_business' || f.occupation === 'artisan',
+    applyUrl: "https://udyamregistration.gov.in/"
+  },
+  {
+    id: 516, name: "Shop & Establishment Act Licence", shortName: "Shop Act", icon: "🏪",
+    category: "Document", state: "all",
+    benefit: "Legal registration to operate shop/establishment; required for bank loans & GST",
+    objective: "Mandatory state registration for any commercial establishment.",
+    eligibility: ["Any person running a shop/establishment", "Varies by state rules"],
+    documents: ["Aadhaar", "PAN", "Address Proof of establishment", "Photograph"],
+    premium: "State-wise fee (₹100–₹2,000)",
+    check: (f) => f.occupation === 'small_business' || f.occupation === 'street_vendor',
+    applyUrl: "OFFLINE:Municipal / Labour Department (state-wise portal)"
+  },
+  {
+    id: 517, name: "APAAR ID (One Nation One Student ID)", shortName: "APAAR", icon: "🎒",
+    category: "Document", state: "all",
+    benefit: "Permanent 12-digit academic ID storing all educational records digitally",
+    objective: "Lifetime student ID linking academic records from school to higher education.",
+    eligibility: ["Any student enrolled in a recognized institution", "Aadhaar required"],
+    documents: ["Aadhaar", "School/College ID", "Parent Consent (if minor)"],
+    premium: "Free",
+    check: (f) => f.has_school_children || f.occupation === 'student',
+    applyUrl: "https://apaar.education.gov.in/"
+  },
+  {
+    id: 518, name: "Family ID", shortName: "Family ID", icon: "👨‍👩‍👧",
+    category: "Document", state: "all",
+    benefit: "Unified family-level ID linking members for auto-eligibility in schemes",
+    objective: "State-level family identifier (e.g., PPP, Samagra, Praja Palana) used for scheme targeting.",
+    eligibility: ["Any resident family of the state"],
+    documents: ["Aadhaar (all members)", "Ration Card", "Address Proof"],
+    premium: "Free",
+    check: (f) => true,
+    applyUrl: "OFFLINE:State Family ID Portal (Samagra/PPP/Praja Palana)"
+  }
+];
+
+/* =========================================================================
+   STATE & LOGIC
+   ========================================================================= */
+let currentFilter = 'all';
+let currentSearch = '';
+let lastResults = [];
+
+// Populate stat counts on load
+document.addEventListener('DOMContentLoaded', () => {
+  const welfare = SCHEMES.filter(s => s.category !== 'Document').length;
+  const docs = SCHEMES.filter(s => s.category === 'Document').length;
+  document.getElementById('stat-schemes').textContent = welfare + '+';
+  document.getElementById('stat-docs').textContent = docs + '+';
+});
+
+function syncCheckStyle(cb) {
+  cb.closest('.check-item').classList.toggle('active', cb.checked);
+}
+
+function getFormData() {
+  return {
+    age: parseInt(document.getElementById('age').value) || 0,
+    gender: document.getElementById('gender').value,
+    income: parseInt(document.getElementById('income').value) || 999999,
+    bpl: document.getElementById('bpl').value,
+    occupation: document.getElementById('occupation').value,
+    state: document.getElementById('state').value,
+    has_girl_child: document.getElementById('has_girl_child').checked,
+    pregnant: document.getElementById('pregnant').checked,
+    single_parent: document.getElementById('single_parent').checked,
+    widow: document.getElementById('widow').checked,
+    disabled: document.getElementById('disabled').checked,
+    has_bank_account: document.getElementById('has_bank_account').checked,
+    has_aadhaar: document.getElementById('has_aadhaar').checked,
+    has_ration: document.getElementById('has_ration').checked,
+    no_house: document.getElementById('no_house').checked,
+    rural: document.getElementById('rural').checked,
+    has_school_children: document.getElementById('has_school_children').checked,
+    marriage_age_daughter: document.getElementById('marriage_age_daughter').checked
+  };
+}
+
+function findSchemes() {
+  const f = getFormData();
+  const selectedState = f.state;
+
+  const eligible = SCHEMES.filter(s => {
+    const stateMatch = s.state === 'all' || s.state === selectedState;
+    try {
+      return stateMatch && s.check(f);
+    } catch (e) {
+      return false;
+    }
+  });
+
+  lastResults = eligible;
+  currentFilter = 'all';
+  currentSearch = '';
+
+  document.getElementById('initial-state').style.display = 'none';
+  document.getElementById('results-area').style.display = 'block';
+
+  renderResults(eligible);
+  closePanel();
+
+  // Scroll right panel up on mobile
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function renderResults(schemes) {
+  const area = document.getElementById('results-area');
+
+  const cats = [...new Set(schemes.map(s => s.category))];
+  const catOrder = ['Health','Insurance','Pension','Finance','Women','Child','Agriculture','Skill','Housing','Document'];
+  cats.sort((a,b) => catOrder.indexOf(a) - catOrder.indexOf(b));
+
+  let filterHTML = `<span class="filter-tag active-filter" data-filter="all" onclick="filterCards('all', this)">All (${schemes.length})</span>`;
+  cats.forEach(c => {
+    const cnt = schemes.filter(s => s.category === c).length;
+    filterHTML += `<span class="filter-tag" data-cat="${c}" data-filter="${c}" onclick="filterCards('${c}', this)">${c} (${cnt})</span>`;
+  });
+
+  area.innerHTML = `
+    <div class="results-header">
+      <div class="results-count">Found <span id="result-count-num">${schemes.length}</span> eligible ${schemes.length === 1 ? 'scheme' : 'schemes / documents'}</div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="search" class="search-input" id="search-input" placeholder="Search schemes by name…" oninput="handleSearch(this.value)">
+      <button class="search-clear" id="search-clear" onclick="clearSearch()" aria-label="Clear">✕</button>
+    </div>
+    <div class="filter-tags">${filterHTML}</div>
+    <div class="schemes-grid" id="schemes-grid"></div>`;
+
+  renderGrid();
+}
+
+function renderGrid() {
+  const grid = document.getElementById('schemes-grid');
+  if (!grid) return;
+
+  let filtered = lastResults;
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(s => s.category === currentFilter);
+  }
+  if (currentSearch.trim()) {
+    const q = currentSearch.toLowerCase().trim();
+    filtered = filtered.filter(s =>
+      s.name.toLowerCase().includes(q) ||
+      s.shortName.toLowerCase().includes(q) ||
+      s.benefit.toLowerCase().includes(q) ||
+      s.category.toLowerCase().includes(q)
+    );
+  }
+
+  // Update visible count in header
+  const countEl = document.getElementById('result-count-num');
+  if (countEl) countEl.textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="big-icon">🔎</div>
+      <h3>No matching items</h3>
+      <p>${currentSearch ? 'Try a different search term' : 'Try adjusting the profile — check age, income, or occupation'}</p>
+    </div>`;
+    return;
+  }
+
+  let cardsHTML = '';
+  filtered.forEach(s => {
+    const eligPoints = s.eligibility.slice(0,3).map(e => `<li>${e}</li>`).join('');
+    const docs = s.documents.slice(0,3).map(d => `<span class="doc-chip">${d}</span>`).join('') +
+                 (s.documents.length > 3 ? `<span class="doc-chip">+${s.documents.length-3}</span>` : '');
+    const stateLabel = getStateLabel(s.state);
+
+    // Apply button logic
+    const applyHTML = buildApplyButton(s);
+
+    cardsHTML += `
+      <div class="scheme-card" data-cat="${s.category}" data-id="${s.id}">
+        <div class="card-stripe"></div>
+        <div class="card-cat-badge">${s.category}</div>
+        <div class="card-body">
+          <div class="card-header">
+            <div class="card-icon">${s.icon}</div>
+            <div>
+              <div class="card-title">${s.name}</div>
+              <div class="card-subtitle">${s.shortName}</div>
+            </div>
+          </div>
+          <span class="state-chip">${stateLabel}</span>
+          <div class="card-benefit">
+            <div class="card-benefit-label">Key Benefit</div>
+            <div class="card-benefit-value">${s.benefit.length > 110 ? s.benefit.substring(0,110)+'…' : s.benefit}</div>
+          </div>
+          <ul class="eligibility-list">${eligPoints}</ul>
+          <div class="doc-chips">${docs}</div>
+        </div>
+        <div class="card-footer">
+          <span class="premium-info">💰 ${s.premium}</span>
+          <div class="card-actions">
+            <button class="more-btn" onclick="showModal(${s.id})">Details</button>
+            ${applyHTML}
+          </div>
+        </div>
+      </div>`;
+  });
+
+  grid.innerHTML = cardsHTML;
+}
+
+function getStateLabel(st) {
+  const map = {
+    'all': '🇮🇳 Central',
+    'delhi': 'Delhi',
+    'haryana': 'Haryana',
+    'maharashtra': 'Maharashtra',
+    'karnataka': 'Karnataka',
+    'tamilnadu': 'Tamil Nadu',
+    'telangana': 'Telangana'
+  };
+  return map[st] || st;
+}
+
+function buildApplyButton(s) {
+  const url = s.applyUrl || '';
+  if (url.startsWith('OFFLINE:')) {
+    const label = url.substring(8);
+    // Show an "Offline" button that opens a modal-like alert with the office info
+    return `<button class="apply-btn offline" onclick="showOfflineInfo(${s.id})" title="${label.replace(/"/g,'&quot;')}">🏢 Offline Only</button>`;
+  }
+  if (url && url.startsWith('http')) {
+    return `<a class="apply-btn" href="${url}" target="_blank" rel="noopener noreferrer">✓ Apply Now</a>`;
+  }
+  return `<button class="apply-btn offline" onclick="showModal(${s.id})">🏢 Visit Office</button>`;
+}
+
+function showOfflineInfo(id) {
+  const s = SCHEMES.find(x => x.id === id);
+  if (!s) return;
+  const info = (s.applyUrl || '').replace(/^OFFLINE:/, '');
+  showModal(id);
+  // After modal renders, prepend the offline notice
+  setTimeout(() => {
+    const body = document.getElementById('modal-body');
+    if (body) {
+      const notice = document.createElement('div');
+      notice.className = 'modal-section';
+      notice.style.cssText = 'background:rgba(255,107,0,0.08);border:1px solid rgba(255,107,0,0.25);border-radius:10px;padding:14px 16px;margin-bottom:18px;';
+      notice.innerHTML = `
+        <div class="modal-section-title">📍 How to Apply</div>
+        <p style="font-weight:600;color:var(--text-dark);">This scheme requires in-person application at:</p>
+        <p style="margin-top:6px;">${info}</p>
+      `;
+      body.insertBefore(notice, body.firstChild);
+    }
+  }, 10);
+}
+
+function filterCards(cat, el) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active-filter'));
+  if (el) el.classList.add('active-filter');
+  renderGrid();
+}
+
+function handleSearch(val) {
+  currentSearch = val;
+  document.getElementById('search-clear').classList.toggle('visible', val.length > 0);
+  renderGrid();
+}
+
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  currentSearch = '';
+  document.getElementById('search-clear').classList.remove('visible');
+  renderGrid();
+}
+
+function showModal(id) {
+  const s = SCHEMES.find(x => x.id === id);
+  if (!s) return;
+
+  document.getElementById('modal-title').innerHTML = `${s.icon} ${s.name}`;
+
+  const eligHTML = s.eligibility.map(e => `<li>${e}</li>`).join('');
+  const docHTML = s.documents.map(d => `<li>${d}</li>`).join('');
+  const stateMap = {
+    'all': 'Central Government',
+    'delhi': 'Delhi (NCT)',
+    'haryana': 'Haryana State',
+    'maharashtra': 'Maharashtra State',
+    'karnataka': 'Karnataka State',
+    'tamilnadu': 'Tamil Nadu State',
+    'telangana': 'Telangana State'
+  };
+  const stateLabel = stateMap[s.state] || s.state;
+
+  // Apply section at top of modal
+  let applySection = '';
+  const url = s.applyUrl || '';
+  if (url.startsWith('http')) {
+    applySection = `
+      <div class="modal-section" style="background:rgba(19,136,8,0.08);border:1px solid rgba(19,136,8,0.25);border-radius:10px;padding:14px 16px;">
+        <div class="modal-section-title" style="color:var(--green);">✓ Apply Online</div>
+        <p style="margin-bottom:10px;">Tap below to open the official application portal on this phone:</p>
+        <a href="${url}" target="_blank" rel="noopener noreferrer" class="apply-btn" style="display:inline-flex;width:auto;padding:12px 20px;font-size:0.85rem;text-decoration:none;">✓ Open Official Portal</a>
+        <p style="margin-top:10px;font-size:0.72rem;color:var(--text-light);word-break:break-all;">${url}</p>
+      </div>`;
+  } else if (url.startsWith('OFFLINE:')) {
+    const info = url.substring(8);
+    applySection = `
+      <div class="modal-section" style="background:rgba(255,107,0,0.08);border:1px solid rgba(255,107,0,0.25);border-radius:10px;padding:14px 16px;">
+        <div class="modal-section-title">🏢 How to Apply (Offline)</div>
+        <p style="font-weight:600;color:var(--text-dark);">This scheme requires in-person application at:</p>
+        <p style="margin-top:6px;">${info}</p>
+      </div>`;
+  }
+
+  document.getElementById('modal-body').innerHTML = `
+    ${applySection}
+    <div class="modal-section">
+      <div class="modal-section-title">Objective</div>
+      <p>${s.objective}</p>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Key Benefits</div>
+      <p>${s.benefit}</p>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Eligibility Criteria</div>
+      <ul>${eligHTML}</ul>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Documents Required</div>
+      <ul>${docHTML}</ul>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Premium / Cost</div>
+      <p>${s.premium}</p>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Category & Jurisdiction</div>
+      <p>${s.category} ${s.category === 'Document' ? 'Document' : 'Scheme'} – ${stateLabel}</p>
+    </div>`;
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) {
+    closeModalDirect();
+  }
+}
+
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function resetForm() {
+  document.getElementById('age').value = '';
+  document.getElementById('gender').value = '';
+  document.getElementById('income').value = '';
+  document.getElementById('bpl').value = '';
+  document.getElementById('occupation').value = '';
+  document.getElementById('state').value = 'all';
+
+  document.querySelectorAll('.check-item input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.check-item').classList.remove('active');
+  });
+
+  document.getElementById('initial-state').style.display = 'flex';
+  document.getElementById('results-area').style.display = 'none';
+  lastResults = [];
+}
+
+/* Mobile panel toggle */
+function openPanel() {
+  document.getElementById('left-panel').classList.add('open');
+  document.getElementById('panel-backdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePanel() {
+  document.getElementById('left-panel').classList.remove('open');
+  document.getElementById('panel-backdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('mobile-toggle').addEventListener('click', openPanel);
+
+/* Keyboard shortcuts */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModalDirect();
+    closePanel();
+  }
+});
+</script>
+</body>
+</html>
